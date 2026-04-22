@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
-    <title>Gothic Archive: Sentinel Edition</title>
+    <title>Gothic Archive: Sentinel Home</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -15,7 +15,6 @@
             --highlight: #8b0000;
             --text-color: #e0e0e0;
             --gloss: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%);
-            --off-glow: #333;
             --on-glow: #00ff41;
         }
 
@@ -24,18 +23,18 @@
             color: var(--text-color);
             font-family: 'Georgia', serif;
             margin: 0;
-            padding-bottom: 80px;
+            padding-bottom: 100px;
             user-select: none;
             overflow-x: hidden;
         }
 
         .admin-bar {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(25px);
             padding: 15px;
             border-bottom: 1px solid var(--accent-color);
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
             position: sticky;
             top: 0;
@@ -46,64 +45,63 @@
             background: #111;
             color: var(--text-color);
             border: 1px solid #333;
-            padding: 8px 14px;
-            border-radius: 15px;
-            font-size: 0.7rem;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.65rem;
             font-weight: bold;
             text-transform: uppercase;
-            transition: all 0.3s ease;
         }
 
-        /* --- NOTIFICATION TOGGLE STATES --- */
-        .notif-toggle.status-off { border-color: var(--off-glow); color: #666; }
-        .notif-toggle.status-on { border-color: var(--on-glow); box-shadow: 0 0 8px var(--on-glow); color: var(--on-glow); }
-        .notif-toggle.status-denied { border-color: var(--highlight); color: var(--highlight); }
+        .notif-toggle.active {
+            border-color: var(--on-glow);
+            box-shadow: 0 0 8px var(--on-glow);
+            color: var(--on-glow);
+        }
 
-        .admin-bar button.active {
+        #edit-btn.active {
             background: var(--accent-color);
             border-color: var(--highlight);
             box-shadow: 0 0 10px var(--highlight);
         }
 
+        /* --- HALF-SIZE WIDGET GRID --- */
         #widget-display-area {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 15px;
+            align-items: start;
         }
 
         .widget-box {
             background: var(--panel-color);
             border: 1px solid #1a1a1a;
-            width: 95%;
-            max-width: 450px;
-            padding: 20px;
-            border-radius: 30px;
+            padding: 15px;
+            border-radius: 25px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             box-sizing: border-box;
+            transition: height 0.3s ease;
+            min-height: 100px;
         }
 
         .widget-title {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             color: #cc6666;
             text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 3px;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        .reminder-list { display: flex; flex-direction: column; gap: 12px; }
-
         .reminder-item {
             background: #000000;
-            border-radius: 20px;
-            padding: 18px;
-            border: 1px solid #151515;
+            border-radius: 15px;
+            padding: 12px;
+            border: 1px solid #181818;
+            margin-bottom: 8px;
             position: relative;
-            box-sizing: border-box;
             width: 100%;
+            box-sizing: border-box;
         }
 
         .reminder-item::after {
@@ -111,32 +109,44 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: var(--gloss);
-            border-radius: 20px;
+            border-radius: 15px;
             pointer-events: none;
         }
 
-        .edit-active .reminder-item { border: 1px dashed var(--highlight); }
+        .edit-active .reminder-item { border: 1px dashed var(--highlight); cursor: pointer; }
 
         .reminder-header {
-            display: grid;
-            grid-template-columns: 40px 1fr 40px;
-            align-items: center;
+            display: flex;
+            flex-direction: column; /* Stacked for half-size widgets */
+            gap: 5px;
             width: 100%;
         }
 
+        .reminder-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .reminder-header input[type="checkbox"] {
-            width: 22px; height: 22px; accent-color: var(--accent-color); cursor: pointer;
+            width: 18px; height: 18px;
         }
 
         .reminder-header span { 
-            text-align: left; word-wrap: break-word; overflow-wrap: break-word; 
-            line-height: 1.5; font-size: 1rem; padding: 0 10px;
+            word-wrap: break-word;
+            line-height: 1.3;
+            font-size: 0.85rem;
         }
 
-        .reminder-time-tag { font-size: 0.65rem; color: #555; text-align: right; }
+        .time-tag {
+            font-size: 0.6rem;
+            color: #555;
+        }
 
         .reminder-item img {
-            width: 100%; height: auto; border-radius: 15px; margin-top: 15px; border: 1px solid #111;
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 8px;
         }
 
         #modal-overlay {
@@ -150,14 +160,18 @@
         }
 
         .modal {
-            background: #050505; padding: 30px; border: 1px solid var(--accent-color);
-            border-radius: 35px; width: 90%; max-width: 400px;
+            background: #050505;
+            padding: 25px;
+            border: 1px solid var(--accent-color);
+            border-radius: 30px;
+            width: 90%;
+            max-width: 380px;
         }
 
         input, select {
             width: 100%; background: #000; border: 1px solid #222;
-            color: white; margin: 12px 0; padding: 15px; border-radius: 15px;
-            font-size: 1rem; box-sizing: border-box;
+            color: white; margin: 8px 0; padding: 12px; border-radius: 12px;
+            font-size: 0.9rem; box-sizing: border-box;
         }
     </style>
 </head>
@@ -166,27 +180,26 @@
 <div class="admin-bar">
     <button id="edit-btn" onclick="toggleEditMode()">Edit</button>
     <button onclick="openModal()">+ Add</button>
-    <button id="notif-btn" class="notif-toggle status-off" onclick="toggleNotifications()">Notifs: Off</button>
-    <button onclick="location.reload()">Refresh</button>
+    <button id="notif-toggle" class="notif-toggle" onclick="requestSentinel()">Notifs</button>
+    <button onclick="location.reload()">Sync</button>
 </div>
 
 <div id="widget-display-area"></div>
 
 <div id="modal-overlay">
     <div class="modal">
-        <h3 id="modal-title" style="color:var(--highlight); text-align:center; font-weight:normal; letter-spacing:2px;">ARCHIVE</h3>
+        <h3 id="modal-title" style="color:var(--highlight); text-align:center;">MODIFICATION</h3>
         <input type="hidden" id="edit-id">
-        <input type="text" id="rem-text" placeholder="Ritual Name">
+        <input type="text" id="rem-text" placeholder="Title">
         <input type="datetime-local" id="rem-time">
         <select id="widget-select" onchange="toggleWidgetInput()">
             <option value="new">-- New Widget --</option>
         </select>
         <input type="text" id="new-widget-name" placeholder="Widget Name..." style="display:none;">
-        <input type="text" id="rem-link" placeholder="Link (Optional)">
         <input type="file" id="rem-file" accept="image/*">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:15px; border-radius:20px;" onclick="saveReminder()">BIND</button>
-            <button style="flex:1; background:#222; color:white; border:none; padding:15px; border-radius:20px;" onclick="closeModal()">CLOSE</button>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
+            <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">EXIT</button>
         </div>
     </div>
 </div>
@@ -211,51 +224,45 @@
 
     let reminders = [];
     let isEditMode = false;
-    let notifiedIds = new Set();
+    let notifiedSet = new Set();
 
-    // --- NOTIFICATION HANDLER ---
-    window.toggleNotifications = () => {
-        if (Notification.permission === "default") {
-            Notification.requestPermission().then(updateNotifUI);
-        } else if (Notification.permission === "denied") {
-            alert("Archive Blocked: Please enable notifications in your browser/iOS settings.");
-        } else {
-            alert("Sentinel Active: You are already receiving notifications.");
-        }
-        updateNotifUI();
-    };
-
-    function updateNotifUI() {
-        const btn = document.getElementById('notif-btn');
-        btn.classList.remove('status-off', 'status-on', 'status-denied');
-        
-        if (Notification.permission === "granted") {
-            btn.innerText = "Notifs: On";
-            btn.classList.add('status-on');
-        } else if (Notification.permission === "denied") {
-            btn.innerText = "Notifs: Denied";
-            btn.classList.add('status-denied');
-        } else {
-            btn.innerText = "Notifs: Off";
-            btn.classList.add('status-off');
-        }
-    }
-
-    setInterval(() => {
-        const now = new Date();
-        const localISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        reminders.forEach(r => {
-            if (r.time === localISO && !notifiedIds.has(r.id)) {
-                if (Notification.permission === "granted") {
-                    new Notification("Gothic Reminder", { body: r.text, icon: 'https://your-hosted-path.com/gothic-brain-icon.png' });
-                }
-                alert("DUE: " + r.text);
-                notifiedIds.add(r.id);
+    // --- NOTIFICATION FIX: IOS SENTINEL ---
+    window.requestSentinel = () => {
+        Notification.requestPermission().then(permission => {
+            updateNotifButton(permission);
+            if(permission === "granted") {
+                // Test notification to "wake up" the service
+                const n = new Notification("Sentinel Active", { body: "Home Screen Notifications Synced." });
             }
         });
-    }, 10000);
+    };
 
-    // --- ARCHIVE LOGIC ---
+    function updateNotifButton(perm) {
+        const btn = document.getElementById('notif-toggle');
+        btn.classList.toggle('active', perm === "granted");
+        btn.innerText = perm === "granted" ? "Notifs: On" : "Notifs: Off";
+    }
+
+    // High-frequency heartbeat to prevent iOS from sleeping the app context
+    setInterval(() => {
+        const now = new Date();
+        const localStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        
+        reminders.forEach(r => {
+            if (r.time === localStr && !notifiedSet.has(r.id)) {
+                if (Notification.permission === "granted") {
+                    new Notification("ARCHIVE ALERT", { 
+                        body: r.text,
+                        requireInteraction: true // Keeps it on screen longer
+                    });
+                }
+                alert("!! " + r.text);
+                notifiedSet.add(r.id);
+            }
+        });
+    }, 5000); // Check every 5 seconds
+
+    // --- LOGIC ---
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
         document.body.classList.toggle('edit-active', isEditMode);
@@ -269,19 +276,16 @@
         [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(w => {
             select.innerHTML += `<option value="${w}">${w}</option>`;
         });
-
         if (id) {
             const r = reminders.find(item => item.id === id);
             document.getElementById('edit-id').value = id;
-            document.getElementById('rem-text').value = r.text || '';
+            document.getElementById('rem-text').value = r.text;
             document.getElementById('rem-time').value = r.time || '';
-            document.getElementById('rem-link').value = r.link || '';
             document.getElementById('widget-select').value = r.widget;
         } else {
             document.getElementById('edit-id').value = '';
             document.getElementById('rem-text').value = '';
             document.getElementById('rem-time').value = '';
-            document.getElementById('rem-link').value = '';
         }
         document.getElementById('modal-overlay').style.display = 'flex';
         window.toggleWidgetInput();
@@ -297,36 +301,35 @@
         const data = snap.val();
         reminders = data ? Object.keys(data).map(k => ({ ...data[k], id: k })) : [];
         renderArchive();
-        updateNotifUI();
+        updateNotifButton(Notification.permission);
     });
 
     window.saveReminder = () => {
         const id = document.getElementById('edit-id').value;
         const text = document.getElementById('rem-text').value;
         const time = document.getElementById('rem-time').value;
-        const link = document.getElementById('rem-link').value;
         const wSel = document.getElementById('widget-select').value;
         const wName = (wSel === 'new') ? document.getElementById('new-widget-name').value : wSel;
         const file = document.getElementById('rem-file').files[0];
 
-        if (!text || !wName) return alert("Missing Ritual Data.");
+        if (!text || !wName) return;
 
-        const send = (img = null) => {
-            const p = { text, time, link, widget: wName };
-            if (img) p.image = img;
-            if (id) update(ref(db, `reminders/${id}`), p);
-            else push(dbRef, p);
+        const pushData = (img = null) => {
+            const payload = { text, time, widget: wName };
+            if (img) payload.image = img;
+            if (id) update(ref(db, `reminders/${id}`), payload);
+            else push(dbRef, payload);
             closeModal();
         };
 
         if (file) {
-            const r = new FileReader();
-            r.onload = (e) => send(e.target.result);
-            r.readAsDataURL(file);
-        } else send();
+            const reader = new FileReader();
+            reader.onload = (e) => pushData(e.target.result);
+            reader.readAsDataURL(file);
+        } else pushData();
     };
 
-    window.deleteReminder = (id) => { if (confirm("Exile from Archive?")) remove(ref(db, `reminders/${id}`)); };
+    window.deleteReminder = (id) => { if (confirm("Erase?")) remove(ref(db, `reminders/${id}`)); };
 
     function renderArchive() {
         const area = document.getElementById('widget-display-area');
@@ -340,24 +343,22 @@
         Object.keys(groups).forEach(name => {
             const box = document.createElement('div');
             box.className = 'widget-box';
-            box.setAttribute('data-w', name);
-            box.innerHTML = `<div class="widget-title">${name}</div><div class="reminder-list"></div>`;
+            box.innerHTML = `<div class="widget-title">${name}</div><div class="reminder-list" data-w="${name}"></div>`;
             
             groups[name].forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'reminder-item';
                 div.setAttribute('data-id', item.id);
                 if (!isEditMode) div.draggable = true;
-                
-                div.onclick = (e) => { 
-                    if(isEditMode && e.target.type !== 'checkbox') openModal(item.id); 
-                };
+                div.onclick = (e) => { if (isEditMode && e.target.type !== 'checkbox') openModal(item.id); };
 
                 div.innerHTML = `
                     <div class="reminder-header">
-                        <input type="checkbox" onchange="deleteReminder('${item.id}')">
+                        <div class="reminder-header-top">
+                             <input type="checkbox" onchange="deleteReminder('${item.id}')">
+                             <div class="time-tag">${item.time ? item.time.split('T')[1] : ''}</div>
+                        </div>
                         <span>${item.text}</span>
-                        <div class="reminder-time-tag">${item.time ? item.time.split('T')[1] : ''}</div>
                     </div>
                     ${item.image ? `<img src="${item.image}">` : ''}
                 `;
@@ -380,27 +381,14 @@
                 e.preventDefault();
                 const d = document.querySelector('.dragging');
                 if (!d) return;
-                const after = getAfter(l, e.clientY);
-                if (!after) l.appendChild(d);
-                else l.insertBefore(d, after);
+                l.appendChild(d);
             };
             l.ondrop = () => {
                 const d = document.querySelector('.dragging');
                 if (!d) return;
-                const newW = l.closest('.widget-box').getAttribute('data-w');
-                update(ref(db, `reminders/${d.getAttribute('data-id')}`), { widget: newW });
+                update(ref(db, `reminders/${d.getAttribute('data-id')}`), { widget: l.getAttribute('data-w') });
             };
         });
-    }
-
-    function getAfter(list, y) {
-        const els = [...list.querySelectorAll('.reminder-item:not(.dragging)')];
-        return els.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) return { offset, element: child };
-            else return closest;
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 </script>
 </body>
