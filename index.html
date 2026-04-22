@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gothic Archive: Reminders</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --panel-color: #1a1a1a;
+            --accent-color: #4a0404;
+            --text-color: #d1d1d1;
+            --border-color: #333;
+            --highlight: #8b0000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Georgia', serif;
+            margin: 0;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+
+        /* Header Styles */
+        #header-container {
+            width: 100%;
+            height: 200px;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #header-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+
+        #header-upload-btn {
+            position: absolute;
+            z-index: 10;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 8px;
+            cursor: pointer;
+            display: none; /* Only in edit mode */
+        }
+
+        /* Controls */
+        .admin-bar {
+            background: var(--panel-color);
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        button {
+            background: #222;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button.active {
+            border-color: var(--highlight);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* Reminder Grid */
+        #reminder-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        .reminder-widget {
+            background: var(--panel-color);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            position: relative;
+            transition: transform 0.2s;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .edit-mode .reminder-widget {
+            outline: 1px dashed var(--highlight);
+            cursor: move;
+        }
+
+        .reminder-widget img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .reminder-widget a {
+            color: var(--highlight);
+            text-decoration: none;
+            display: block;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .checkbox-container {
+            float: left;
+            margin-right: 10px;
+        }
+
+        /* Custom Modal */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--panel-color);
+            padding: 25px;
+            border: 2px solid var(--accent-color);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border-color);
+            color: white;
+            margin: 10px 0;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="admin-bar">
+    <button id="edit-toggle" onclick="toggleEditMode()">Enable Edit Mode</button>
+    <button onclick="openModal()">+ Add Reminder</button>
+    <button onclick="saveArchive()">Save Changes</button>
+</div>
+
+<div id="header-container">
+    <input type="file" id="header-input" style="display:none" onchange="handleHeaderUpload(this)">
+    <button id="header-upload-btn" onclick="document.getElementById('header-input').click()">Change Header Image</button>
+    <img id="header-img" src="https://via.placeholder.com/1200x200?text=Upload+Gothic+Header" alt="Gothic Header">
+</div>
+
+<div id="reminder-container">
+    </div>
+
+<div id="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-title">New Reminder</h3>
+        <input type="text" id="rem-text" placeholder="What is the task?">
+        <input type="text" id="rem-link" placeholder="Link (optional)">
+        <input type="file" id="rem-file" accept="image/*">
+        <div style="display:flex; gap:10px;">
+            <button onclick="addReminder()">Confirm</button>
+            <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let editMode = false;
+    let reminders = JSON.parse(localStorage.getItem('gothicReminders')) || [];
+
+    function toggleEditMode() {
+        editMode = !editMode;
+        document.body.classList.toggle('edit-mode', editMode);
+        document.getElementById('edit-toggle').classList.toggle('active', editMode);
+        document.getElementById('header-upload-btn').style.display = editMode ? 'block' : 'none';
+    }
+
+    function openModal() {
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('rem-text').value = '';
+        document.getElementById('rem-link').value = '';
+        document.getElementById('rem-file').value = '';
+    }
+
+    function handleHeaderUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('header-img').src = e.target.result;
+                localStorage.setItem('gothicHeader', e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function addReminder() {
+        const text = document.getElementById('rem-text').value;
+        const link = document.getElementById('rem-link').value;
+        const fileInput = document.getElementById('rem-file');
+        
+        if (!text) return alert("Task required");
+
+        const newRem = {
+            id: Date.now(),
+            text: text,
+            link: link,
+            image: null
+        };
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                newRem.image = e.target.result;
+                reminders.push(newRem);
+                renderReminders();
+                closeModal();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            reminders.push(newRem);
+            renderReminders();
+            closeModal();
+        }
+    }
+
+    function deleteReminder(id) {
+        if (confirm("Have you completed this ritual? (Delete reminder)")) {
+            reminders = reminders.filter(r => r.id !== id);
+            saveArchive();
+            renderReminders();
+        }
+    }
+
+    function renderReminders() {
+        const container = document.getElementById('reminder-container');
+        container.innerHTML = '';
+        
+        reminders.forEach(rem => {
+            const widget = document.createElement('div');
+            widget.className = 'reminder-widget';
+            widget.innerHTML = `
+                <div class="checkbox-container">
+                    <input type="checkbox" onchange="deleteReminder(${rem.id})">
+                </div>
+                <span>${rem.text}</span>
+                ${rem.link ? `<a href="${rem.link}" target="_blank">View Link</a>` : ''}
+                ${rem.image ? `<img src="${rem.image}">` : ''}
+            `;
+            container.appendChild(widget);
+        });
+    }
+
+    function saveArchive() {
+        localStorage.setItem('gothicReminders', JSON.stringify(reminders));
+        alert("Changes bound to the archive.");
+    }
+
+    // Initial Load
+    window.onload = () => {
+        const savedHeader = localStorage.getItem('gothicHeader');
+        if (savedHeader) document.getElementById('header-img').src = savedHeader;
+        renderReminders();
+        
+        // Request Notification Permission
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    };
+</script>
+
+</body>
+</html>
