@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
-    <title>Gothic Archive: Absolute Edit</title>
+    <title>Gothic Archive: Bound Edition</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -24,6 +24,7 @@
             margin: 0;
             padding-bottom: 80px;
             user-select: none;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
         .admin-bar {
@@ -73,6 +74,8 @@
             border-radius: 25px;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-sizing: border-box; /* Ensures padding stays inside width */
+            overflow: hidden;
         }
 
         .widget-box::after {
@@ -91,51 +94,64 @@
             margin-bottom: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
+            word-wrap: break-word;
         }
 
-        .reminder-list { min-height: 60px; }
+        .reminder-list { 
+            min-height: 60px;
+            width: 100%;
+        }
 
         .reminder-item {
             background: rgba(0, 0, 0, 0.7);
             border-radius: 15px;
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
             z-index: 5;
+            box-sizing: border-box;
+            width: 100%;
         }
 
-        /* --- EDIT MODE VISUALS --- */
         .edit-active .reminder-item {
             border: 1px dashed var(--highlight);
             cursor: pointer !important;
         }
 
-        .edit-active .reminder-item span {
-            color: #ff4d4d;
-            text-decoration: underline;
-            pointer-events: auto;
-        }
-
         .reminder-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Align to top for long text */
             gap: 10px;
+            width: 100%;
         }
 
-        .reminder-header span { flex-grow: 1; pointer-events: none; }
+        /* --- SURGICAL OVERFLOW FIX --- */
+        .reminder-header span { 
+            flex: 1;
+            pointer-events: none;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word; /* Forces break if no spaces */
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
 
         .reminder-time-tag {
             font-size: 0.65rem;
             color: #666;
             font-style: italic;
+            white-space: nowrap; /* Keep time on one line */
+            margin-top: 2px;
         }
 
         .reminder-item img {
             width: 100%;
+            height: auto;
             border-radius: 10px;
-            margin-top: 8px;
+            margin-top: 10px;
             border: 1px solid #222;
+            display: block;
         }
 
         #modal-overlay {
@@ -161,6 +177,7 @@
             width: 100%; background: #000; border: 1px solid #333;
             color: white; margin: 10px 0; padding: 12px; border-radius: 12px;
             font-size: 1rem;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -216,27 +233,20 @@
     let isEditMode = false;
     let notifiedIds = new Set();
 
-    // --- NOTIFICATION ENGINE ---
     setInterval(() => {
         const now = new Date();
         const localISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        
         reminders.forEach(r => {
             if (r.time === localISO && !notifiedIds.has(r.id)) {
-                if (Notification.permission === "granted") {
-                    new Notification("Archive Reminder", { body: r.text });
-                }
+                if (Notification.permission === "granted") new Notification("Archive Reminder", { body: r.text });
                 alert("DUE NOW: " + r.text);
                 notifiedIds.add(r.id);
             }
         });
     }, 10000);
 
-    window.requestNotify = () => {
-        Notification.requestPermission().then(res => alert("Notifs: " + res));
-    };
+    window.requestNotify = () => Notification.requestPermission().then(res => alert("Notifs: " + res));
 
-    // --- CORE LOGIC ---
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
         document.body.classList.toggle('edit-active', isEditMode);
@@ -308,11 +318,8 @@
         } else send();
     };
 
-    window.deleteReminder = (id) => {
-        if (confirm("Purge?")) remove(ref(db, `reminders/${id}`));
-    };
+    window.deleteReminder = (id) => { if (confirm("Purge?")) remove(ref(db, `reminders/${id}`)); };
 
-    // --- RENDER & DRAG ---
     function renderArchive() {
         const area = document.getElementById('widget-display-area');
         area.innerHTML = '';
@@ -332,9 +339,7 @@
                 const div = document.createElement('div');
                 div.className = 'reminder-item';
                 div.setAttribute('data-id', item.id);
-                // CRITICAL FIX: Only set draggable if NOT in edit mode
                 if (!isEditMode) div.draggable = true;
-                
                 div.onclick = () => { if(isEditMode) openModal(item.id); };
 
                 div.innerHTML = `
@@ -349,32 +354,29 @@
             });
             area.appendChild(box);
         });
-        
         if (!isEditMode) initDrag();
     }
 
     function initDrag() {
         const items = document.querySelectorAll('.reminder-item');
         const lists = document.querySelectorAll('.reminder-list');
-
         items.forEach(i => {
-            i.addEventListener('dragstart', () => i.classList.add('dragging'));
-            i.addEventListener('dragend', () => i.classList.remove('dragging'));
+            i.ondragstart = () => i.classList.add('dragging');
+            i.ondragend = () => i.classList.remove('dragging');
         });
-
         lists.forEach(l => {
-            l.addEventListener('dragover', e => {
+            l.ondragover = e => {
                 e.preventDefault();
                 const d = document.querySelector('.dragging');
                 const after = getAfter(l, e.clientY);
                 if (!after) l.appendChild(d);
                 else l.insertBefore(d, after);
-            });
-            l.addEventListener('drop', () => {
+            };
+            l.ondrop = () => {
                 const d = document.querySelector('.dragging');
                 const newW = l.closest('.widget-box').getAttribute('data-w');
                 update(ref(db, `reminders/${d.getAttribute('data-id')}`), { widget: newW });
-            });
+            };
         });
     }
 
