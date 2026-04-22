@@ -54,7 +54,6 @@
             box-shadow: 0 0 15px var(--highlight);
         }
 
-        /* Widget Layout */
         #widget-display-area {
             padding: 30px;
             display: flex;
@@ -86,7 +85,6 @@
             letter-spacing: 2px;
         }
 
-        /* Reminder Items */
         .reminder-item {
             background: #000;
             border-left: 3px solid var(--accent-color);
@@ -113,7 +111,6 @@
             margin-top: 5px;
         }
 
-        /* Modal Customization */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -158,33 +155,27 @@
 <div class="admin-bar">
     <button id="edit-toggle" onclick="toggleEditMode()">Enable Edit Mode</button>
     <button onclick="openModal()">+ Add Reminder</button>
+    <button onclick="requestNotify()">Enable Notifications</button>
 </div>
 
-<div id="widget-display-area">
-    </div>
+<div id="widget-display-area"></div>
 
 <div id="modal-overlay">
     <div class="modal">
         <h2 style="color:var(--highlight); margin:0 0 20px 0; text-align:center;">ARCHIVE ENTRY</h2>
-        
         <label>The Task</label>
         <input type="text" id="rem-text" placeholder="What must be done?">
-        
         <label>Appointed Time</label>
         <input type="datetime-local" id="rem-time">
-
         <label>Destination Widget</label>
         <select id="widget-select" onchange="toggleWidgetInput()">
             <option value="new">-- Create New Widget --</option>
         </select>
         <input type="text" id="new-widget-name" placeholder="Enter new widget name..." style="display:block;">
-
         <label>Source Link</label>
         <input type="text" id="rem-link" placeholder="https://...">
-
         <label>Visual Evidence (Image)</label>
         <input type="file" id="rem-file" accept="image/*">
-
         <div style="display:flex; gap:15px; margin-top:25px;">
             <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:15px; cursor:pointer;" onclick="addReminder()">BIND</button>
             <button style="flex:1; background:#222; color:white; border:none; padding:15px; cursor:pointer;" onclick="closeModal()">CANCEL</button>
@@ -212,8 +203,33 @@
 
     let reminders = [];
     let editMode = false;
+    let alertedIds = new Set(); // To prevent duplicate alerts
 
-    // --- INTERFACE LOGIC ---
+    window.requestNotify = () => {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") alert("Archive notifications enabled.");
+        });
+    };
+
+    // BACKGROUND HEARTBEAT
+    setInterval(() => {
+        const now = new Date();
+        const currentTimeStr = now.toISOString().slice(0, 16); // Match datetime-local format
+
+        reminders.forEach(rem => {
+            if (rem.time === currentTimeStr && !alertedIds.has(rem.id)) {
+                sendAlert(rem);
+                alertedIds.add(rem.id);
+            }
+        });
+    }, 30000); // Check every 30 seconds
+
+    function sendAlert(rem) {
+        if (Notification.permission === "granted") {
+            new Notification("Gothic Ritual Due", { body: rem.text });
+        }
+        alert(`Gothic Archive Alert: ${rem.text}`);
+    }
 
     window.toggleEditMode = () => {
         editMode = !editMode;
@@ -229,10 +245,8 @@
     };
 
     window.openModal = () => {
-        // Populating existing widget names into the select
         const select = document.getElementById('widget-select');
         select.innerHTML = '<option value="new">-- Create New Widget --</option>';
-        
         const uniqueWidgets = [...new Set(reminders.map(r => r.widget))].filter(Boolean);
         uniqueWidgets.forEach(name => {
             const opt = document.createElement('option');
@@ -240,7 +254,6 @@
             opt.textContent = name;
             select.appendChild(opt);
         });
-
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
@@ -252,8 +265,6 @@
         document.getElementById('new-widget-name').value = '';
         document.getElementById('rem-file').value = '';
     };
-
-    // --- DATA HANDLING ---
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
@@ -268,22 +279,12 @@
         const selectVal = document.getElementById('widget-select').value;
         const newName = document.getElementById('new-widget-name').value;
         const file = document.getElementById('rem-file').files[0];
-
         const targetWidget = (selectVal === 'new') ? newName : selectVal;
 
-        if (!text || !targetWidget) {
-            alert("The ritual requires a task and a widget name.");
-            return;
-        }
+        if (!text || !targetWidget) return alert("Archive requires more detail.");
 
         const finalizePush = (imgData = null) => {
-            push(dbRef, {
-                text: text,
-                time: time,
-                link: link,
-                widget: targetWidget,
-                image: imgData
-            });
+            push(dbRef, { text, time, link, widget: targetWidget, image: imgData });
             closeModal();
         };
 
@@ -298,21 +299,13 @@
 
     window.deleteReminder = (id) => {
         if (confirm("Purge this reminder from existence?")) {
-            const itemRef = ref(db, `reminders/${id}`);
-            remove(itemRef);
+            remove(ref(db, `reminders/${id}`));
         }
     };
 
     function renderArchive() {
         const container = document.getElementById('widget-display-area');
         container.innerHTML = '';
-
-        if (reminders.length === 0) {
-            container.innerHTML = '<p style="opacity:0.5; font-style:italic;">The archive is currently empty...</p>';
-            return;
-        }
-
-        // Group by Widget Name
         const groups = reminders.reduce((acc, curr) => {
             if (!acc[curr.widget]) acc[curr.widget] = [];
             acc[curr.widget].push(curr);
@@ -322,7 +315,6 @@
         Object.keys(groups).forEach(widgetName => {
             const box = document.createElement('div');
             box.className = 'widget-box';
-            
             let itemsHtml = groups[widgetName].map(item => `
                 <div class="reminder-item">
                     <div style="display:flex; align-items:flex-start;">
@@ -336,11 +328,7 @@
                     ${item.image ? `<img src="${item.image}">` : ''}
                 </div>
             `).join('');
-
-            box.innerHTML = `
-                <div class="widget-title">${widgetName}</div>
-                <div class="reminder-list">${itemsHtml}</div>
-            `;
+            box.innerHTML = `<div class="widget-title">${widgetName}</div><div class="reminder-list">${itemsHtml}</div>`;
             container.appendChild(box);
         });
     }
