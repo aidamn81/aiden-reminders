@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gothic Archive: Reminders</title>
+    <title>Gothic Archive: Widgets & Reminders</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
@@ -23,7 +23,6 @@
             touch-action: pan-y;
         }
 
-        /* Admin Bar: Centered and Bigger Buttons */
         .admin-bar {
             background: var(--panel-color);
             padding: 20px;
@@ -55,7 +54,7 @@
             box-shadow: 0 0 15px var(--highlight);
         }
 
-        /* Widget Container (Folders) */
+        /* Widget Layout */
         #widget-display-area {
             padding: 30px;
             display: flex;
@@ -68,10 +67,12 @@
             background: var(--panel-color);
             border: 1px solid var(--accent-color);
             width: 320px;
-            min-height: 200px;
+            min-height: 150px;
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .widget-title {
@@ -81,33 +82,42 @@
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 15px;
             padding-bottom: 5px;
-            text-transform: capitalize;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        /* Individual Reminder Items */
+        /* Reminder Items */
         .reminder-item {
             background: #000;
             border-left: 3px solid var(--accent-color);
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            padding: 12px;
+            position: relative;
         }
 
-        .reminder-item span { display: block; margin-bottom: 5px; }
-        .reminder-time { color: #888; font-size: 0.8rem; font-style: italic; }
+        .reminder-item span { display: block; margin-bottom: 5px; font-weight: bold; }
+        .reminder-time { color: #888; font-size: 0.75rem; font-style: italic; }
         
         .reminder-item img {
             max-width: 100%;
             height: auto;
-            margin-top: 8px;
+            margin-top: 10px;
             border: 1px solid var(--border-color);
         }
 
-        /* Modal */
+        .reminder-item a {
+            color: var(--highlight);
+            font-size: 0.8rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        /* Modal Customization */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             justify-content: center;
             align-items: center;
@@ -117,23 +127,25 @@
 
         .modal {
             background: var(--panel-color);
-            padding: 25px;
+            padding: 30px;
             border: 2px solid var(--accent-color);
             width: 90%;
             max-width: 450px;
-            margin: 20px;
         }
 
-        label { display: block; margin-top: 10px; font-size: 0.8rem; color: #888; }
+        label { display: block; margin-top: 15px; font-size: 0.8rem; color: #888; text-transform: uppercase; }
         input, select { 
             width: 100%; 
             background: #000; 
             border: 1px solid var(--border-color); 
             color: white; 
-            margin: 5px 0 15px 0; 
-            padding: 10px; 
+            margin-top: 5px; 
+            padding: 12px; 
             box-sizing: border-box;
+            font-family: 'Georgia', serif;
         }
+
+        input[type="checkbox"] { width: auto; transform: scale(1.3); margin-right: 10px; cursor: pointer; }
 
         @media (max-width: 768px) {
             .admin-bar { flex-direction: column; align-items: center; gap: 10px; }
@@ -153,36 +165,36 @@
 
 <div id="modal-overlay">
     <div class="modal">
-        <h3 style="color:var(--highlight); margin-top:0;">New Archive Entry</h3>
+        <h2 style="color:var(--highlight); margin:0 0 20px 0; text-align:center;">ARCHIVE ENTRY</h2>
         
-        <label>Reminder Text</label>
-        <input type="text" id="rem-text" placeholder="The task at hand...">
+        <label>The Task</label>
+        <input type="text" id="rem-text" placeholder="What must be done?">
         
-        <label>Remind Me At (Date & Time)</label>
+        <label>Appointed Time</label>
         <input type="datetime-local" id="rem-time">
 
-        <label>Assign to Widget</label>
-        <select id="widget-select" onchange="toggleNewWidgetInput()">
-            <option value="new">+ Create New Widget</option>
+        <label>Destination Widget</label>
+        <select id="widget-select" onchange="toggleWidgetInput()">
+            <option value="new">-- Create New Widget --</option>
         </select>
-        <input type="text" id="new-widget-name" placeholder="Name of new widget..." style="display:block;">
+        <input type="text" id="new-widget-name" placeholder="Enter new widget name..." style="display:block;">
 
-        <label>Link (Optional)</label>
+        <label>Source Link</label>
         <input type="text" id="rem-link" placeholder="https://...">
 
-        <label>Visual Aid (Optional)</label>
+        <label>Visual Evidence (Image)</label>
         <input type="file" id="rem-file" accept="image/*">
 
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px;" onclick="addReminder()">Bind to Archive</button>
-            <button style="flex:1; background:#333; color:white; border:none; padding:12px;" onclick="closeModal()">Cancel</button>
+        <div style="display:flex; gap:15px; margin-top:25px;">
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:15px; cursor:pointer;" onclick="addReminder()">BIND</button>
+            <button style="flex:1; background:#222; color:white; border:none; padding:15px; cursor:pointer;" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDHrIBHOkeixoLagY9f2JfFqWpQRFj8MeE",
@@ -196,11 +208,12 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const dbRef = ref(db, 'reminders');
 
-    let editMode = false;
     let reminders = [];
+    let editMode = false;
 
-    // --- LOGIC ---
+    // --- INTERFACE LOGIC ---
 
     window.toggleEditMode = () => {
         editMode = !editMode;
@@ -209,8 +222,25 @@
         document.getElementById('edit-toggle').innerText = editMode ? "Lock Archive" : "Enable Edit Mode";
     };
 
+    window.toggleWidgetInput = () => {
+        const select = document.getElementById('widget-select');
+        const input = document.getElementById('new-widget-name');
+        input.style.display = (select.value === 'new') ? 'block' : 'none';
+    };
+
     window.openModal = () => {
-        updateWidgetDropdown();
+        // Populating existing widget names into the select
+        const select = document.getElementById('widget-select');
+        select.innerHTML = '<option value="new">-- Create New Widget --</option>';
+        
+        const uniqueWidgets = [...new Set(reminders.map(r => r.widget))].filter(Boolean);
+        uniqueWidgets.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
@@ -219,37 +249,16 @@
         document.getElementById('rem-text').value = '';
         document.getElementById('rem-time').value = '';
         document.getElementById('rem-link').value = '';
-        document.getElementById('rem-file').value = '';
         document.getElementById('new-widget-name').value = '';
+        document.getElementById('rem-file').value = '';
     };
 
-    window.toggleNewWidgetInput = () => {
-        const select = document.getElementById('widget-select');
-        const input = document.getElementById('new-widget-name');
-        input.style.display = (select.value === 'new') ? 'block' : 'none';
-    };
+    // --- DATA HANDLING ---
 
-    function updateWidgetDropdown() {
-        const select = document.getElementById('widget-select');
-        // Clear existing options except the "New" one
-        select.innerHTML = '<option value="new">+ Create New Widget</option>';
-        
-        const uniqueWidgets = [...new Set(reminders.map(r => r.widget))];
-        uniqueWidgets.forEach(w => {
-            if(w) {
-                const opt = document.createElement('option');
-                opt.value = w;
-                opt.textContent = w;
-                select.appendChild(opt);
-            }
-        });
-    }
-
-    // SYNC DATA
-    onValue(ref(db, 'reminders'), (snapshot) => {
+    onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         reminders = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
-        renderWidgets();
+        renderArchive();
     });
 
     window.addReminder = () => {
@@ -257,47 +266,56 @@
         const time = document.getElementById('rem-time').value;
         const link = document.getElementById('rem-link').value;
         const selectVal = document.getElementById('widget-select').value;
-        const newWName = document.getElementById('new-widget-name').value;
+        const newName = document.getElementById('new-widget-name').value;
         const file = document.getElementById('rem-file').files[0];
 
-        const widgetName = selectVal === 'new' ? newWName : selectVal;
+        const targetWidget = (selectVal === 'new') ? newName : selectVal;
 
-        if (!text || !widgetName) return alert("Task and Widget Name required");
+        if (!text || !targetWidget) {
+            alert("The ritual requires a task and a widget name.");
+            return;
+        }
 
-        const upload = (imgBase64 = null) => {
-            push(ref(db, 'reminders'), { 
-                text, 
-                time, 
-                link, 
-                widget: widgetName, 
-                image: imgBase64 
+        const finalizePush = (imgData = null) => {
+            push(dbRef, {
+                text: text,
+                time: time,
+                link: link,
+                widget: targetWidget,
+                image: imgData
             });
             closeModal();
         };
 
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => upload(e.target.result);
+            reader.onload = (e) => finalizePush(e.target.result);
             reader.readAsDataURL(file);
         } else {
-            upload();
+            finalizePush();
         }
     };
 
     window.deleteReminder = (id) => {
-        if (confirm("Erase this ritual from the archive?")) {
-            remove(ref(db, `reminders/${id}`));
+        if (confirm("Purge this reminder from existence?")) {
+            const itemRef = ref(db, `reminders/${id}`);
+            remove(itemRef);
         }
     };
 
-    function renderWidgets() {
-        const area = document.getElementById('widget-display-area');
-        area.innerHTML = '';
+    function renderArchive() {
+        const container = document.getElementById('widget-display-area');
+        container.innerHTML = '';
 
-        // Group reminders by widget
-        const groups = reminders.reduce((acc, rem) => {
-            if (!acc[rem.widget]) acc[rem.widget] = [];
-            acc[rem.widget].push(rem);
+        if (reminders.length === 0) {
+            container.innerHTML = '<p style="opacity:0.5; font-style:italic;">The archive is currently empty...</p>';
+            return;
+        }
+
+        // Group by Widget Name
+        const groups = reminders.reduce((acc, curr) => {
+            if (!acc[curr.widget]) acc[curr.widget] = [];
+            acc[curr.widget].push(curr);
             return acc;
         }, {});
 
@@ -305,13 +323,17 @@
             const box = document.createElement('div');
             box.className = 'widget-box';
             
-            let itemsHtml = groups[widgetName].map(rem => `
+            let itemsHtml = groups[widgetName].map(item => `
                 <div class="reminder-item">
-                    <input type="checkbox" onchange="deleteReminder('${rem.id}')">
-                    <span>${rem.text}</span>
-                    <div class="reminder-time">${rem.time ? rem.time.replace('T', ' ') : 'No time set'}</div>
-                    ${rem.link ? `<a href="${rem.link}" target="_blank" style="color:var(--highlight); font-size:0.8rem;">Open Link</a>` : ''}
-                    ${rem.image ? `<img src="${rem.image}">` : ''}
+                    <div style="display:flex; align-items:flex-start;">
+                        <input type="checkbox" onchange="deleteReminder('${item.id}')">
+                        <div>
+                            <span>${item.text}</span>
+                            <div class="reminder-time">${item.time ? item.time.replace('T', ' @ ') : 'Undated'}</div>
+                            ${item.link ? `<a href="${item.link}" target="_blank">View Link</a>` : ''}
+                        </div>
+                    </div>
+                    ${item.image ? `<img src="${item.image}">` : ''}
                 </div>
             `).join('');
 
@@ -319,7 +341,7 @@
                 <div class="widget-title">${widgetName}</div>
                 <div class="reminder-list">${itemsHtml}</div>
             `;
-            area.appendChild(box);
+            container.appendChild(box);
         });
     }
 </script>
