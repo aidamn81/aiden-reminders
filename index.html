@@ -7,16 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
-
     <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
     
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkdvdGhpYyBBcmNoaXZlIFJlbWluZGVycyIsCiAgInNob3J0X25hbWUiOiAiQXJjaGl2ZSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8veW91ci1ob3N0ZWQtcGF0aC5jb20vZ290aGljLWJyYWluLWljb24ucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNTA1MDUiLAogICJ0aGVtZV9jb2xvciI6ICIjMDUwNTA1Igp9">
-    <title>Gothic Archive: Gloss Edition</title>
+    <title>Gothic Archive: Full Protocol</title>
     <style>
         :root {
-            /* DEEP BLACK BACKGROUND (SURGICAL CONFIRMATION) */
             --bg-color: #050505;
-            --panel-color: rgba(26, 26, 26, 0.85);
+            --panel-color: rgba(26, 26, 26, 0.9);
             --accent-color: #4a0404;
             --text-color: #e0e0e0;
             --border-color: #333;
@@ -25,23 +22,23 @@
         }
 
         body {
-            background-color: var(--bg-color); /* Applied true black */
+            background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Georgia', serif;
             margin: 0;
-            padding-top: 20px; /* Space for status bar when fullscreen */
-            padding-bottom: 50px;
+            padding-bottom: 60px;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- PRESERVED NAVIGATION --- */
+        /* --- NAVIGATION PROTOCOL --- */
         .admin-bar {
             background: var(--panel-color);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             padding: 15px;
             border-bottom: 1px solid var(--accent-color);
             display: flex;
-            gap: 12px;
+            gap: 10px;
             justify-content: center;
             position: sticky;
             top: 0;
@@ -53,14 +50,12 @@
             background: #111;
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.8rem;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
             transition: all 0.3s ease;
         }
 
@@ -70,20 +65,20 @@
             box-shadow: 0 0 15px var(--highlight);
         }
 
-        /* --- GLOSSY ROUNDED WIDGETS (PRESERVED) --- */
+        /* --- GLOSSY WIDGETS --- */
         #widget-display-area {
-            padding: 25px;
+            padding: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 25px;
+            gap: 20px;
             justify-content: center;
         }
 
         .widget-box {
             background: var(--panel-color);
             border: 1px solid rgba(74, 4, 4, 0.4);
-            width: 310px;
-            min-height: 100px;
+            width: 320px;
+            min-height: 120px;
             padding: 15px;
             border-radius: 25px;
             position: relative;
@@ -103,37 +98,44 @@
             font-size: 1.1rem;
             color: var(--highlight);
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             padding-bottom: 5px;
         }
 
-        .reminder-list {
-            min-height: 40px;
-        }
+        /* --- REMINDER ITEMS --- */
+        .reminder-list { min-height: 40px; }
 
         .reminder-item {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            margin-bottom: 6px;
-            padding: 6px 10px;
-            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 5px;
             border: 1px solid rgba(255,255,255,0.03);
             cursor: grab;
         }
 
-        .reminder-item.dragging { opacity: 0.3; }
+        .reminder-item.dragging { opacity: 0.2; transform: scale(0.9); }
 
-        .reminder-item span { flex-grow: 1; }
+        .reminder-header { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .reminder-header span { flex-grow: 1; cursor: pointer; }
+        
+        .reminder-item img {
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+        }
 
-        .edit-mode .reminder-item span { color: var(--highlight); text-decoration: underline; }
+        .reminder-time { font-size: 0.7rem; color: #777; font-style: italic; }
 
-        /* --- MODAL (PRESERVED) --- */
+        /* --- MODAL --- */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -155,16 +157,20 @@
 
         input, select { 
             width: 100%; background: #000; border: 1px solid #333; 
-            color: white; margin: 8px 0; padding: 10px; border-radius: 10px; 
+            color: white; margin: 8px 0; padding: 12px; border-radius: 10px; 
+            font-family: inherit;
         }
+
+        .edit-mode .reminder-item span { color: var(--highlight); text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="admin-bar">
     <button id="edit-toggle" onclick="toggleEditMode()">Edit Mode</button>
-    <button onclick="openModal()">+ Add Reminder</button>
-    <button onclick="location.reload()" style="border-color: #444;">Refresh App</button>
+    <button onclick="openModal()">+ Add</button>
+    <button onclick="requestNotify()">Notifs</button>
+    <button onclick="location.reload()">Refresh</button>
 </div>
 
 <div id="widget-display-area"></div>
@@ -173,15 +179,15 @@
     <div class="modal">
         <h3 id="modal-title" style="color:var(--highlight); text-align:center; margin-top:0;">ARCHIVE ENTRY</h3>
         <input type="hidden" id="edit-id">
-        <input type="text" id="rem-text" placeholder="Ritual Name">
+        <input type="text" id="rem-text" placeholder="Task Name">
         <input type="datetime-local" id="rem-time">
         <select id="widget-select" onchange="toggleWidgetInput()">
-            <option value="new">-- New Widget --</option>
+            <option value="new">-- Create New Widget --</option>
         </select>
-        <input type="text" id="new-widget-name" placeholder="Widget Name...">
-        <input type="text" id="rem-link" placeholder="Source Link (Optional)">
+        <input type="text" id="new-widget-name" placeholder="Widget Name..." style="display:none;">
+        <input type="text" id="rem-link" placeholder="Link (Optional)">
         <input type="file" id="rem-file" accept="image/*">
-        <div style="display:flex; gap:10px; margin-top:10px;">
+        <div style="display:flex; gap:10px; margin-top:15px;">
             <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
             <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">CANCEL</button>
         </div>
@@ -208,9 +214,28 @@
 
     let reminders = [];
     let isEditMode = false;
+    let alertedIds = new Set();
 
-    // --- PRESERVED LOGIC ---
+    // --- NOTIFICATION HEARTBEAT (BACK ADDED) ---
+    setInterval(() => {
+        const now = new Date();
+        const currentTimeStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        reminders.forEach(rem => {
+            if (rem.time === currentTimeStr && !alertedIds.has(rem.id)) {
+                if (Notification.permission === "granted") {
+                    new Notification("Archive Ritual", { body: rem.text });
+                }
+                alert("RITUAL DUE: " + rem.text);
+                alertedIds.add(rem.id);
+            }
+        });
+    }, 15000);
 
+    window.requestNotify = () => {
+        Notification.requestPermission().then(p => alert("Notifs: " + p));
+    };
+
+    // --- UI CONTROLS ---
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
         document.getElementById('edit-toggle').classList.toggle('active', isEditMode);
@@ -219,7 +244,7 @@
 
     window.openModal = (id = null) => {
         const select = document.getElementById('widget-select');
-        select.innerHTML = '<option value="new">-- New Widget --</option>';
+        select.innerHTML = '<option value="new">-- Create New Widget --</option>';
         [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(n => {
             select.innerHTML += `<option value="${n}">${n}</option>`;
         });
@@ -231,7 +256,7 @@
             document.getElementById('rem-time').value = rem.time || '';
             document.getElementById('rem-link').value = rem.link || '';
             document.getElementById('widget-select').value = rem.widget;
-            document.getElementById('modal-title').innerText = "EDIT RITUAL";
+            document.getElementById('modal-title').innerText = "EDIT ENTRY";
         } else {
             document.getElementById('edit-id').value = '';
             document.getElementById('rem-text').value = '';
@@ -250,6 +275,7 @@
         document.getElementById('new-widget-name').style.display = isNew ? 'block' : 'none';
     };
 
+    // --- DATA PROTOCOL ---
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         reminders = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
@@ -266,29 +292,28 @@
             : document.getElementById('widget-select').value;
         const file = document.getElementById('rem-file').files[0];
 
-        if (!text || !widget) return alert("Archive requires more detail.");
+        if (!text || !widget) return alert("Details missing.");
 
         const finalize = (imgData = null) => {
             const payload = { text, time, link, widget };
             if (imgData) payload.image = imgData;
-
             if (id) update(ref(db, `reminders/${id}`), payload);
             else push(dbRef, payload);
             closeModal();
         };
 
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => finalize(e.target.result);
-            reader.readAsDataURL(file);
+            const r = new FileReader();
+            r.onload = (e) => finalize(e.target.result);
+            r.readAsDataURL(file);
         } else finalize();
     };
 
     window.deleteReminder = (id) => {
-        if(confirm("Erase this reminder?")) remove(ref(db, `reminders/${id}`));
+        if(confirm("Erase entry?")) remove(ref(db, `reminders/${id}`));
     };
 
-    // --- PRESERVED DRAG & DROP ---
+    // --- SORTABLE DRAG & DROP ---
     function initSortable() {
         const items = document.querySelectorAll('.reminder-item');
         const lists = document.querySelectorAll('.reminder-list');
@@ -303,11 +328,8 @@
                 e.preventDefault();
                 const dragging = document.querySelector('.dragging');
                 const afterElement = getDragAfterElement(list, e.clientY);
-                if (afterElement == null) {
-                    list.appendChild(dragging);
-                } else {
-                    list.insertBefore(dragging, afterElement);
-                }
+                if (afterElement == null) list.appendChild(dragging);
+                else list.insertBefore(dragging, afterElement);
             });
 
             list.addEventListener('drop', () => {
@@ -320,19 +342,15 @@
     }
 
     function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.reminder-item:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
+        const draggables = [...container.querySelectorAll('.reminder-item:not(.dragging)')];
+        return draggables.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset, element: child };
+            else return closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // --- PRESERVED RENDER ---
     function renderArchive() {
         const container = document.getElementById('widget-display-area');
         container.innerHTML = '';
@@ -354,9 +372,14 @@
                 div.draggable = isEditMode;
                 div.setAttribute('data-id', item.id);
                 div.innerHTML = `
-                    <input type="checkbox" onchange="deleteReminder('${item.id}')">
-                    <span onclick="isEditMode ? openModal('${item.id}') : null">${item.text}</span>
-                    <small style="font-size:0.65rem; color:#666;">${item.time ? item.time.split('T')[1] : ''}</small>`;
+                    <div class="reminder-header">
+                        <input type="checkbox" onchange="deleteReminder('${item.id}')">
+                        <span onclick="isEditMode ? openModal('${item.id}') : null">${item.text}</span>
+                        <div class="reminder-time">${item.time ? item.time.split('T')[1] : ''}</div>
+                    </div>
+                    ${item.image ? `<img src="${item.image}">` : ''}
+                    ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--highlight); font-size:0.6rem;">Link</a>` : ''}
+                `;
                 box.querySelector('.reminder-list').appendChild(div);
             });
             container.appendChild(box);
