@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Archive">
     <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
-    
-    <title>Gothic Archive: Full Edit Protocol</title>
+    <title>Gothic Archive: Absolute Edit</title>
     <style>
         :root {
             --bg-color: #050505;
-            --panel-color: rgba(26, 26, 26, 0.95);
+            --panel-color: rgba(20, 20, 20, 0.98);
             --accent-color: #4a0404;
-            --text-color: #e0e0e0;
-            --border-color: #333;
             --highlight: #8b0000;
-            --gloss: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            --text-color: #e0e0e0;
+            --gloss: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 50%);
         }
 
         body {
@@ -26,14 +22,13 @@
             color: var(--text-color);
             font-family: 'Georgia', serif;
             margin: 0;
-            padding-bottom: 60px;
+            padding-bottom: 80px;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .admin-bar {
             background: var(--panel-color);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
             padding: 15px;
             border-bottom: 1px solid var(--accent-color);
             display: flex;
@@ -41,20 +36,18 @@
             justify-content: center;
             position: sticky;
             top: 0;
-            z-index: 100;
-            flex-wrap: wrap;
+            z-index: 1000;
         }
 
         .admin-bar button {
             background: #111;
             color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 10px 18px;
+            border: 1px solid #333;
+            padding: 10px 15px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            cursor: pointer;
         }
 
         .admin-bar button.active {
@@ -73,16 +66,16 @@
 
         .widget-box {
             background: var(--panel-color);
-            border: 1px solid rgba(74, 4, 4, 0.4);
-            width: 320px;
-            min-height: 120px;
+            border: 1px solid rgba(74, 4, 4, 0.5);
+            width: 330px;
+            min-height: 100px;
             padding: 15px;
             border-radius: 25px;
             position: relative;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        .widget-box::before {
+        .widget-box::after {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; height: 50%;
@@ -92,107 +85,110 @@
         }
 
         .widget-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--highlight);
             text-align: center;
-            margin-bottom: 12px;
-            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 5px;
         }
 
-        .reminder-list { min-height: 50px; }
+        .reminder-list { min-height: 60px; }
 
         .reminder-item {
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 12px;
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            border: 1px solid rgba(255,255,255,0.03);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
             position: relative;
+            z-index: 5;
         }
 
-        .reminder-item.dragging { opacity: 0.2; transform: scale(0.95); }
-
-        .reminder-header { display: flex; align-items: center; gap: 10px; width: 100%; }
-        
-        /* Highlighting the clickable area in Edit Mode */
-        .edit-mode .reminder-header span { 
-            color: var(--highlight); 
-            text-decoration: underline; 
-            cursor: pointer;
-            font-weight: bold;
+        /* --- EDIT MODE VISUALS --- */
+        .edit-active .reminder-item {
+            border: 1px dashed var(--highlight);
+            cursor: pointer !important;
         }
 
-        .reminder-header span { flex-grow: 1; }
-        
+        .edit-active .reminder-item span {
+            color: #ff4d4d;
+            text-decoration: underline;
+            pointer-events: auto;
+        }
+
+        .reminder-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reminder-header span { flex-grow: 1; pointer-events: none; }
+
+        .reminder-time-tag {
+            font-size: 0.65rem;
+            color: #666;
+            font-style: italic;
+        }
+
         .reminder-item img {
             width: 100%;
-            border-radius: 8px;
-            margin-top: 5px;
-            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-top: 8px;
+            border: 1px solid #222;
         }
-
-        .reminder-time-label { font-size: 0.7rem; color: #777; font-style: italic; }
 
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .modal {
-            background: #111;
+            background: #0a0a0a;
             padding: 25px;
             border: 1px solid var(--accent-color);
             border-radius: 30px;
-            width: 85%;
+            width: 90%;
             max-width: 400px;
         }
 
-        input, select { 
-            width: 100%; background: #000; border: 1px solid #333; 
-            color: white; margin: 8px 0; padding: 12px; border-radius: 10px; 
-            font-family: inherit;
+        input, select {
+            width: 100%; background: #000; border: 1px solid #333;
+            color: white; margin: 10px 0; padding: 12px; border-radius: 12px;
+            font-size: 1rem;
         }
-
-        .edit-mode .reminder-item { cursor: default; } /* No grab cursor in edit mode to allow clicks */
     </style>
 </head>
-<body class="">
+<body>
 
 <div class="admin-bar">
-    <button id="edit-toggle" onclick="toggleEditMode()">Edit Mode</button>
+    <button id="edit-btn" onclick="toggleEditMode()">Edit Mode</button>
     <button onclick="openModal()">+ Add</button>
-    <button onclick="requestNotify()">Enable Notifications</button>
-    <button onclick="location.reload()">Refresh App</button>
+    <button onclick="requestNotify()">Notifs</button>
+    <button onclick="location.reload()">Refresh</button>
 </div>
 
 <div id="widget-display-area"></div>
 
 <div id="modal-overlay">
     <div class="modal">
-        <h3 id="modal-title" style="color:var(--highlight); text-align:center; margin-top:0;">ARCHIVE ENTRY</h3>
+        <h3 id="modal-title" style="color:var(--highlight); text-align:center;">ARCHIVE DATA</h3>
         <input type="hidden" id="edit-id">
         <input type="text" id="rem-text" placeholder="Ritual/Task Name">
         <input type="datetime-local" id="rem-time">
         <select id="widget-select" onchange="toggleWidgetInput()">
-            <option value="new">-- Create New Widget --</option>
+            <option value="new">-- New Widget --</option>
         </select>
         <input type="text" id="new-widget-name" placeholder="Widget Name..." style="display:none;">
         <input type="text" id="rem-link" placeholder="Link (Optional)">
         <input type="file" id="rem-file" accept="image/*">
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND DATA</button>
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
             <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
@@ -218,84 +214,71 @@
 
     let reminders = [];
     let isEditMode = false;
-    let alertedIds = new Set();
+    let notifiedIds = new Set();
 
-    // --- REINFORCED NOTIFICATION HEARTBEAT ---
+    // --- NOTIFICATION ENGINE ---
     setInterval(() => {
         const now = new Date();
-        // Convert to local ISO string for comparison
-        const offset = now.getTimezoneOffset() * 60000;
-        const localISOTime = new Date(now.getTime() - offset).toISOString().slice(0, 16);
-
-        reminders.forEach(rem => {
-            if (rem.time === localISOTime && !alertedIds.has(rem.id)) {
+        const localISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        
+        reminders.forEach(r => {
+            if (r.time === localISO && !notifiedIds.has(r.id)) {
                 if (Notification.permission === "granted") {
-                    new Notification("Gothic Archive Reminder", {
-                        body: rem.text,
-                        icon: 'https://your-hosted-path.com/gothic-brain-icon.png'
-                    });
+                    new Notification("Archive Reminder", { body: r.text });
                 }
-                alert("RITUAL ALERT: " + rem.text);
-                alertedIds.add(rem.id);
+                alert("DUE NOW: " + r.text);
+                notifiedIds.add(r.id);
             }
         });
-    }, 10000); // Checks every 10 seconds
+    }, 10000);
 
     window.requestNotify = () => {
-        Notification.requestPermission().then(p => {
-            alert("Notification Permission: " + p);
-        });
+        Notification.requestPermission().then(res => alert("Notifs: " + res));
     };
 
-    // --- INTERFACE PROTOCOL ---
+    // --- CORE LOGIC ---
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
-        document.body.classList.toggle('edit-mode', isEditMode);
-        document.getElementById('edit-toggle').classList.toggle('active', isEditMode);
+        document.body.classList.toggle('edit-active', isEditMode);
+        document.getElementById('edit-btn').classList.toggle('active', isEditMode);
         renderArchive();
     };
 
     window.openModal = (id = null) => {
         const select = document.getElementById('widget-select');
-        select.innerHTML = '<option value="new">-- Create New Widget --</option>';
-        const uniqueWidgets = [...new Set(reminders.map(r => r.widget))].filter(Boolean);
-        uniqueWidgets.forEach(n => {
-            select.innerHTML += `<option value="${n}">${n}</option>`;
+        select.innerHTML = '<option value="new">-- New Widget --</option>';
+        [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(w => {
+            select.innerHTML += `<option value="${w}">${w}</option>`;
         });
 
         if (id) {
-            const rem = reminders.find(r => r.id === id);
+            const r = reminders.find(item => item.id === id);
             document.getElementById('edit-id').value = id;
-            document.getElementById('rem-text').value = rem.text || '';
-            document.getElementById('rem-time').value = rem.time || '';
-            document.getElementById('rem-link').value = rem.link || '';
-            document.getElementById('widget-select').value = rem.widget || 'new';
-            document.getElementById('modal-title').innerText = "MODIFY RITUAL";
+            document.getElementById('rem-text').value = r.text || '';
+            document.getElementById('rem-time').value = r.time || '';
+            document.getElementById('rem-link').value = r.link || '';
+            document.getElementById('widget-select').value = r.widget;
+            document.getElementById('modal-title').innerText = "EDIT RITUAL";
         } else {
             document.getElementById('edit-id').value = '';
             document.getElementById('rem-text').value = '';
             document.getElementById('rem-time').value = '';
             document.getElementById('rem-link').value = '';
-            document.getElementById('modal-title').innerText = "NEW ARCHIVE ENTRY";
+            document.getElementById('modal-title').innerText = "NEW ARCHIVE";
         }
         document.getElementById('modal-overlay').style.display = 'flex';
         window.toggleWidgetInput();
     };
 
-    window.closeModal = () => {
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.getElementById('rem-file').value = ''; // Reset file input
-    };
+    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
 
     window.toggleWidgetInput = () => {
-        const isNew = document.getElementById('widget-select').value === 'new';
-        document.getElementById('new-widget-name').style.display = isNew ? 'block' : 'none';
+        document.getElementById('new-widget-name').style.display = (document.getElementById('widget-select').value === 'new') ? 'block' : 'none';
     };
 
-    // --- DATA PROTOCOL ---
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        reminders = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
+    onValue(dbRef, (snap) => {
+        const data = snap.val();
+        reminders = data ? Object.keys(data).map(k => ({ ...data[k], id: k })) : [];
         renderArchive();
     });
 
@@ -304,122 +287,105 @@
         const text = document.getElementById('rem-text').value;
         const time = document.getElementById('rem-time').value;
         const link = document.getElementById('rem-link').value;
-        const widgetSelect = document.getElementById('widget-select').value;
-        const widgetName = (widgetSelect === 'new') ? document.getElementById('new-widget-name').value : widgetSelect;
+        const wSel = document.getElementById('widget-select').value;
+        const wName = (wSel === 'new') ? document.getElementById('new-widget-name').value : wSel;
         const file = document.getElementById('rem-file').files[0];
 
-        if (!text || !widgetName) return alert("Archive Error: Ritual name and Widget required.");
+        if (!text || !wName) return alert("Missing data.");
 
-        const finalize = (imgData = null) => {
-            const payload = { text, time, link, widget: widgetName };
-            if (imgData) payload.image = imgData;
-
-            if (id) {
-                update(ref(db, `reminders/${id}`), payload).then(() => closeModal());
-            } else {
-                push(dbRef, payload).then(() => closeModal());
-            }
+        const send = (img = null) => {
+            const p = { text, time, link, widget: wName };
+            if (img) p.image = img;
+            if (id) update(ref(db, `reminders/${id}`), p);
+            else push(dbRef, p);
+            closeModal();
         };
 
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => finalize(e.target.result);
+            reader.onload = (e) => send(e.target.result);
             reader.readAsDataURL(file);
-        } else {
-            // If editing and no new file selected, preserve existing image if possible 
-            // (Standard update logic in Firebase handles this by only updating provided keys)
-            finalize();
-        }
+        } else send();
     };
 
     window.deleteReminder = (id) => {
-        if(confirm("Permanently erase this entry from the archive?")) {
-            remove(ref(db, `reminders/${id}`));
-        }
+        if (confirm("Purge?")) remove(ref(db, `reminders/${id}`));
     };
 
-    // --- SORTABLE & DRAG LOGIC ---
-    function initSortable() {
-        if (isEditMode) return; // Disable dragging when in Edit Mode so clicks work
-
-        const items = document.querySelectorAll('.reminder-item');
-        const lists = document.querySelectorAll('.reminder-list');
-
-        items.forEach(item => {
-            item.addEventListener('dragstart', () => item.classList.add('dragging'));
-            item.addEventListener('dragend', () => item.classList.remove('dragging'));
-        });
-
-        lists.forEach(list => {
-            list.addEventListener('dragover', e => {
-                e.preventDefault();
-                const dragging = document.querySelector('.dragging');
-                if (!dragging) return;
-                const afterElement = getDragAfterElement(list, e.clientY);
-                if (afterElement == null) list.appendChild(dragging);
-                else list.insertBefore(dragging, afterElement);
-            });
-
-            list.addEventListener('drop', () => {
-                const dragging = document.querySelector('.dragging');
-                if (!dragging) return;
-                const newWidget = list.closest('.widget-box').getAttribute('data-name');
-                const id = dragging.getAttribute('data-id');
-                update(ref(db, `reminders/${id}`), { widget: newWidget });
-            });
-        });
-    }
-
-    function getDragAfterElement(container, y) {
-        const draggables = [...container.querySelectorAll('.reminder-item:not(.dragging)')];
-        return draggables.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) return { offset, element: child };
-            else return closest;
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
+    // --- RENDER & DRAG ---
     function renderArchive() {
-        const container = document.getElementById('widget-display-area');
-        container.innerHTML = '';
-        
-        const groups = reminders.reduce((acc, curr) => {
-            if (!acc[curr.widget]) acc[curr.widget] = [];
-            acc[curr.widget].push(curr);
+        const area = document.getElementById('widget-display-area');
+        area.innerHTML = '';
+        const groups = reminders.reduce((acc, r) => {
+            if (!acc[r.widget]) acc[r.widget] = [];
+            acc[r.widget].push(r);
             return acc;
         }, {});
 
         Object.keys(groups).forEach(name => {
             const box = document.createElement('div');
             box.className = 'widget-box';
-            box.setAttribute('data-name', name);
+            box.setAttribute('data-w', name);
             box.innerHTML = `<div class="widget-title">${name}</div><div class="reminder-list"></div>`;
             
             groups[name].forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'reminder-item';
-                div.draggable = !isEditMode; // Toggle draggable status
                 div.setAttribute('data-id', item.id);
+                // CRITICAL FIX: Only set draggable if NOT in edit mode
+                if (!isEditMode) div.draggable = true;
                 
-                // Display time cleanly
-                const displayTime = item.time ? item.time.replace('T', ' ') : 'No Time Set';
+                div.onclick = () => { if(isEditMode) openModal(item.id); };
 
                 div.innerHTML = `
                     <div class="reminder-header">
                         <input type="checkbox" onchange="deleteReminder('${item.id}')">
-                        <span onclick="if(isEditMode) openModal('${item.id}')">${item.text}</span>
-                        <div class="reminder-time-label">${displayTime}</div>
+                        <span>${item.text}</span>
+                        <div class="reminder-time-tag">${item.time ? item.time.split('T')[1] : ''}</div>
                     </div>
                     ${item.image ? `<img src="${item.image}">` : ''}
-                    ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--highlight); font-size:0.6rem; margin-top:4px;">View Link</a>` : ''}
                 `;
                 box.querySelector('.reminder-list').appendChild(div);
             });
-            container.appendChild(box);
+            area.appendChild(box);
         });
         
-        initSortable();
+        if (!isEditMode) initDrag();
+    }
+
+    function initDrag() {
+        const items = document.querySelectorAll('.reminder-item');
+        const lists = document.querySelectorAll('.reminder-list');
+
+        items.forEach(i => {
+            i.addEventListener('dragstart', () => i.classList.add('dragging'));
+            i.addEventListener('dragend', () => i.classList.remove('dragging'));
+        });
+
+        lists.forEach(l => {
+            l.addEventListener('dragover', e => {
+                e.preventDefault();
+                const d = document.querySelector('.dragging');
+                const after = getAfter(l, e.clientY);
+                if (!after) l.appendChild(d);
+                else l.insertBefore(d, after);
+            });
+            l.addEventListener('drop', () => {
+                const d = document.querySelector('.dragging');
+                const newW = l.closest('.widget-box').getAttribute('data-w');
+                update(ref(db, `reminders/${d.getAttribute('data-id')}`), { widget: newW });
+            });
+        });
+    }
+
+    function getAfter(list, y) {
+        const els = [...list.querySelectorAll('.reminder-item:not(.dragging)')];
+        return els.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) return { offset, element: child };
+            else return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 </script>
 </body>
