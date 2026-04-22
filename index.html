@@ -9,11 +9,11 @@
     <meta name="apple-mobile-web-app-title" content="Archive">
     <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
     
-    <title>Gothic Archive: Full Protocol</title>
+    <title>Gothic Archive: Full Edit Protocol</title>
     <style>
         :root {
             --bg-color: #050505;
-            --panel-color: rgba(26, 26, 26, 0.9);
+            --panel-color: rgba(26, 26, 26, 0.95);
             --accent-color: #4a0404;
             --text-color: #e0e0e0;
             --border-color: #333;
@@ -31,7 +31,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- NAVIGATION PROTOCOL --- */
         .admin-bar {
             background: var(--panel-color);
             backdrop-filter: blur(15px);
@@ -56,7 +55,6 @@
             font-weight: bold;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .admin-bar button.active {
@@ -65,7 +63,6 @@
             box-shadow: 0 0 15px var(--highlight);
         }
 
-        /* --- GLOSSY WIDGETS --- */
         #widget-display-area {
             padding: 20px;
             display: flex;
@@ -105,8 +102,7 @@
             padding-bottom: 5px;
         }
 
-        /* --- REMINDER ITEMS --- */
-        .reminder-list { min-height: 40px; }
+        .reminder-list { min-height: 50px; }
 
         .reminder-item {
             background: rgba(0, 0, 0, 0.6);
@@ -118,13 +114,22 @@
             flex-direction: column;
             gap: 5px;
             border: 1px solid rgba(255,255,255,0.03);
-            cursor: grab;
+            position: relative;
         }
 
-        .reminder-item.dragging { opacity: 0.2; transform: scale(0.9); }
+        .reminder-item.dragging { opacity: 0.2; transform: scale(0.95); }
 
         .reminder-header { display: flex; align-items: center; gap: 10px; width: 100%; }
-        .reminder-header span { flex-grow: 1; cursor: pointer; }
+        
+        /* Highlighting the clickable area in Edit Mode */
+        .edit-mode .reminder-header span { 
+            color: var(--highlight); 
+            text-decoration: underline; 
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .reminder-header span { flex-grow: 1; }
         
         .reminder-item img {
             width: 100%;
@@ -133,9 +138,8 @@
             border: 1px solid var(--border-color);
         }
 
-        .reminder-time { font-size: 0.7rem; color: #777; font-style: italic; }
+        .reminder-time-label { font-size: 0.7rem; color: #777; font-style: italic; }
 
-        /* --- MODAL --- */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -161,16 +165,16 @@
             font-family: inherit;
         }
 
-        .edit-mode .reminder-item span { color: var(--highlight); text-decoration: underline; }
+        .edit-mode .reminder-item { cursor: default; } /* No grab cursor in edit mode to allow clicks */
     </style>
 </head>
-<body>
+<body class="">
 
 <div class="admin-bar">
     <button id="edit-toggle" onclick="toggleEditMode()">Edit Mode</button>
     <button onclick="openModal()">+ Add</button>
-    <button onclick="requestNotify()">Notifs</button>
-    <button onclick="location.reload()">Refresh</button>
+    <button onclick="requestNotify()">Enable Notifications</button>
+    <button onclick="location.reload()">Refresh App</button>
 </div>
 
 <div id="widget-display-area"></div>
@@ -179,7 +183,7 @@
     <div class="modal">
         <h3 id="modal-title" style="color:var(--highlight); text-align:center; margin-top:0;">ARCHIVE ENTRY</h3>
         <input type="hidden" id="edit-id">
-        <input type="text" id="rem-text" placeholder="Task Name">
+        <input type="text" id="rem-text" placeholder="Ritual/Task Name">
         <input type="datetime-local" id="rem-time">
         <select id="widget-select" onchange="toggleWidgetInput()">
             <option value="new">-- Create New Widget --</option>
@@ -188,7 +192,7 @@
         <input type="text" id="rem-link" placeholder="Link (Optional)">
         <input type="file" id="rem-file" accept="image/*">
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND DATA</button>
             <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">CANCEL</button>
         </div>
     </div>
@@ -216,28 +220,37 @@
     let isEditMode = false;
     let alertedIds = new Set();
 
-    // --- NOTIFICATION HEARTBEAT (BACK ADDED) ---
+    // --- REINFORCED NOTIFICATION HEARTBEAT ---
     setInterval(() => {
         const now = new Date();
-        const currentTimeStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        // Convert to local ISO string for comparison
+        const offset = now.getTimezoneOffset() * 60000;
+        const localISOTime = new Date(now.getTime() - offset).toISOString().slice(0, 16);
+
         reminders.forEach(rem => {
-            if (rem.time === currentTimeStr && !alertedIds.has(rem.id)) {
+            if (rem.time === localISOTime && !alertedIds.has(rem.id)) {
                 if (Notification.permission === "granted") {
-                    new Notification("Archive Ritual", { body: rem.text });
+                    new Notification("Gothic Archive Reminder", {
+                        body: rem.text,
+                        icon: 'https://your-hosted-path.com/gothic-brain-icon.png'
+                    });
                 }
-                alert("RITUAL DUE: " + rem.text);
+                alert("RITUAL ALERT: " + rem.text);
                 alertedIds.add(rem.id);
             }
         });
-    }, 15000);
+    }, 10000); // Checks every 10 seconds
 
     window.requestNotify = () => {
-        Notification.requestPermission().then(p => alert("Notifs: " + p));
+        Notification.requestPermission().then(p => {
+            alert("Notification Permission: " + p);
+        });
     };
 
-    // --- UI CONTROLS ---
+    // --- INTERFACE PROTOCOL ---
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
+        document.body.classList.toggle('edit-mode', isEditMode);
         document.getElementById('edit-toggle').classList.toggle('active', isEditMode);
         renderArchive();
     };
@@ -245,30 +258,34 @@
     window.openModal = (id = null) => {
         const select = document.getElementById('widget-select');
         select.innerHTML = '<option value="new">-- Create New Widget --</option>';
-        [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(n => {
+        const uniqueWidgets = [...new Set(reminders.map(r => r.widget))].filter(Boolean);
+        uniqueWidgets.forEach(n => {
             select.innerHTML += `<option value="${n}">${n}</option>`;
         });
 
         if (id) {
             const rem = reminders.find(r => r.id === id);
             document.getElementById('edit-id').value = id;
-            document.getElementById('rem-text').value = rem.text;
+            document.getElementById('rem-text').value = rem.text || '';
             document.getElementById('rem-time').value = rem.time || '';
             document.getElementById('rem-link').value = rem.link || '';
-            document.getElementById('widget-select').value = rem.widget;
-            document.getElementById('modal-title').innerText = "EDIT ENTRY";
+            document.getElementById('widget-select').value = rem.widget || 'new';
+            document.getElementById('modal-title').innerText = "MODIFY RITUAL";
         } else {
             document.getElementById('edit-id').value = '';
             document.getElementById('rem-text').value = '';
             document.getElementById('rem-time').value = '';
             document.getElementById('rem-link').value = '';
-            document.getElementById('modal-title').innerText = "ARCHIVE ENTRY";
+            document.getElementById('modal-title').innerText = "NEW ARCHIVE ENTRY";
         }
         document.getElementById('modal-overlay').style.display = 'flex';
         window.toggleWidgetInput();
     };
 
-    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
+    window.closeModal = () => {
+        document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('rem-file').value = ''; // Reset file input
+    };
 
     window.toggleWidgetInput = () => {
         const isNew = document.getElementById('widget-select').value === 'new';
@@ -287,34 +304,44 @@
         const text = document.getElementById('rem-text').value;
         const time = document.getElementById('rem-time').value;
         const link = document.getElementById('rem-link').value;
-        const widget = (document.getElementById('widget-select').value === 'new') 
-            ? document.getElementById('new-widget-name').value 
-            : document.getElementById('widget-select').value;
+        const widgetSelect = document.getElementById('widget-select').value;
+        const widgetName = (widgetSelect === 'new') ? document.getElementById('new-widget-name').value : widgetSelect;
         const file = document.getElementById('rem-file').files[0];
 
-        if (!text || !widget) return alert("Details missing.");
+        if (!text || !widgetName) return alert("Archive Error: Ritual name and Widget required.");
 
         const finalize = (imgData = null) => {
-            const payload = { text, time, link, widget };
+            const payload = { text, time, link, widget: widgetName };
             if (imgData) payload.image = imgData;
-            if (id) update(ref(db, `reminders/${id}`), payload);
-            else push(dbRef, payload);
-            closeModal();
+
+            if (id) {
+                update(ref(db, `reminders/${id}`), payload).then(() => closeModal());
+            } else {
+                push(dbRef, payload).then(() => closeModal());
+            }
         };
 
         if (file) {
-            const r = new FileReader();
-            r.onload = (e) => finalize(e.target.result);
-            r.readAsDataURL(file);
-        } else finalize();
+            const reader = new FileReader();
+            reader.onload = (e) => finalize(e.target.result);
+            reader.readAsDataURL(file);
+        } else {
+            // If editing and no new file selected, preserve existing image if possible 
+            // (Standard update logic in Firebase handles this by only updating provided keys)
+            finalize();
+        }
     };
 
     window.deleteReminder = (id) => {
-        if(confirm("Erase entry?")) remove(ref(db, `reminders/${id}`));
+        if(confirm("Permanently erase this entry from the archive?")) {
+            remove(ref(db, `reminders/${id}`));
+        }
     };
 
-    // --- SORTABLE DRAG & DROP ---
+    // --- SORTABLE & DRAG LOGIC ---
     function initSortable() {
+        if (isEditMode) return; // Disable dragging when in Edit Mode so clicks work
+
         const items = document.querySelectorAll('.reminder-item');
         const lists = document.querySelectorAll('.reminder-list');
 
@@ -327,6 +354,7 @@
             list.addEventListener('dragover', e => {
                 e.preventDefault();
                 const dragging = document.querySelector('.dragging');
+                if (!dragging) return;
                 const afterElement = getDragAfterElement(list, e.clientY);
                 if (afterElement == null) list.appendChild(dragging);
                 else list.insertBefore(dragging, afterElement);
@@ -334,6 +362,7 @@
 
             list.addEventListener('drop', () => {
                 const dragging = document.querySelector('.dragging');
+                if (!dragging) return;
                 const newWidget = list.closest('.widget-box').getAttribute('data-name');
                 const id = dragging.getAttribute('data-id');
                 update(ref(db, `reminders/${id}`), { widget: newWidget });
@@ -354,6 +383,7 @@
     function renderArchive() {
         const container = document.getElementById('widget-display-area');
         container.innerHTML = '';
+        
         const groups = reminders.reduce((acc, curr) => {
             if (!acc[curr.widget]) acc[curr.widget] = [];
             acc[curr.widget].push(curr);
@@ -369,22 +399,27 @@
             groups[name].forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'reminder-item';
-                div.draggable = isEditMode;
+                div.draggable = !isEditMode; // Toggle draggable status
                 div.setAttribute('data-id', item.id);
+                
+                // Display time cleanly
+                const displayTime = item.time ? item.time.replace('T', ' ') : 'No Time Set';
+
                 div.innerHTML = `
                     <div class="reminder-header">
                         <input type="checkbox" onchange="deleteReminder('${item.id}')">
-                        <span onclick="isEditMode ? openModal('${item.id}') : null">${item.text}</span>
-                        <div class="reminder-time">${item.time ? item.time.split('T')[1] : ''}</div>
+                        <span onclick="if(isEditMode) openModal('${item.id}')">${item.text}</span>
+                        <div class="reminder-time-label">${displayTime}</div>
                     </div>
                     ${item.image ? `<img src="${item.image}">` : ''}
-                    ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--highlight); font-size:0.6rem;">Link</a>` : ''}
+                    ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--highlight); font-size:0.6rem; margin-top:4px;">View Link</a>` : ''}
                 `;
                 box.querySelector('.reminder-list').appendChild(div);
             });
             container.appendChild(box);
         });
-        if(isEditMode) initSortable();
+        
+        initSortable();
     }
 </script>
 </body>
