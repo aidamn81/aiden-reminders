@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Archive">
+
+    <link rel="apple-touch-icon" href="https://your-hosted-path.com/gothic-brain-icon.png">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkdvdGhpYyBBcmNoaXZlIFJlbWluZGVycyIsCiAgInNob3J0X25hbWUiOiAiQXJjaGl2ZSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8veW91ci1ob3N0ZWQtcGF0aC5jb20vZ290aGljLWJyYWluLWljb24ucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9CiAgXSwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNTA1MDUiLAogICJ0aGVtZV9jb2xvciI6ICIjMDUwNTA1Igp9">
     <title>Gothic Archive: Gloss Edition</title>
     <style>
         :root {
+            /* DEEP BLACK BACKGROUND (SURGICAL CONFIRMATION) */
             --bg-color: #050505;
             --panel-color: rgba(26, 26, 26, 0.85);
             --accent-color: #4a0404;
@@ -18,15 +25,16 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-color); /* Applied true black */
             color: var(--text-color);
             font-family: 'Georgia', serif;
             margin: 0;
+            padding-top: 20px; /* Space for status bar when fullscreen */
             padding-bottom: 50px;
             user-select: none;
         }
 
-        /* --- TOP NAVIGATION --- */
+        /* --- PRESERVED NAVIGATION --- */
         .admin-bar {
             background: var(--panel-color);
             backdrop-filter: blur(10px);
@@ -62,7 +70,7 @@
             box-shadow: 0 0 15px var(--highlight);
         }
 
-        /* --- GLOSSY ROUNDED WIDGETS --- */
+        /* --- GLOSSY ROUNDED WIDGETS (PRESERVED) --- */
         #widget-display-area {
             padding: 25px;
             display: flex;
@@ -125,7 +133,7 @@
 
         .edit-mode .reminder-item span { color: var(--highlight); text-decoration: underline; }
 
-        /* --- MODAL --- */
+        /* --- MODAL (PRESERVED) --- */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -200,6 +208,8 @@
 
     let reminders = [];
     let isEditMode = false;
+
+    // --- PRESERVED LOGIC ---
 
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
@@ -278,6 +288,7 @@
         if(confirm("Erase this reminder?")) remove(ref(db, `reminders/${id}`));
     };
 
+    // --- PRESERVED DRAG & DROP ---
     function initSortable() {
         const items = document.querySelectorAll('.reminder-item');
         const lists = document.querySelectorAll('.reminder-list');
@@ -321,6 +332,7 @@
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
+    // --- PRESERVED RENDER ---
     function renderArchive() {
         const container = document.getElementById('widget-display-area');
         container.innerHTML = '';
