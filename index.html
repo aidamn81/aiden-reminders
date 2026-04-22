@@ -3,6 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Gothic Archive: Gloss Edition</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-color: rgba(26, 26, 26, 0.8);
+            --accent-color: #4a0404;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --highlight: #8b0000;
+            --gloss: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        /* Rounded & Glossy Admin Bar */
+        .admin-bar {
+            background: var(--panel-color);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-bottom: 1px solid var(--accent-color);
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-bar button {
+            background: #111;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-bar button::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--gloss);
+        }
+
+        /* Glossy Rounded Widgets */
+        #widget-display-area {
+            padding: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .widget-box {
+            background: var(--panel-color);
+            border: 1px solid rgba(74, 4, 4, 0.5);
+            width: 300px;
+            min-height: 120px;
+            padding: 15px;
+            border-radius: 25px; /* Rounded Edges */
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.1);
+        }
+
+        /* Glossy overlay effect */
+        .widget-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+
+        .widget-title {
+            font-size: 1.2rem;
+            color: var(--highlight);
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Compact Reminders */
+        .reminder-item {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .reminder-item span { flex-grow: 1; cursor: pointer; }
+
+        .reminder-time { font-size: 0.7rem; color: #777; font-style: italic; }
+
+        /* Modal styling */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #111;
+            padding: 25px;
+            border: 1px solid var(--accent-color);
+            border-radius: 30px;
+            width: 85%;
+            max-width: 400px;
+        }
+
+        input, select { 
+            width: 100%; background: #000; border: 1px solid #333; 
+            color: white; margin: 10px 0; padding: 12px; border-radius: 10px; 
+        }
+
+        .edit-mode .widget-box { border-color: var(--highlight); }
+    </style>
+</head>
+<body>
+
+<div class="admin-bar">
+    <button id="edit-toggle" onclick="toggleEditMode()">Edit</button>
+    <button onclick="openModal()">+ Add</button>
+    <button onclick="initNotifications()">Enable Push</button>
+</div>
+
+<div id="widget-display-area"></div>
+
+<div id="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-title" style="color:var(--highlight); text-align:center;">ARCHIVE ENTRY</h3>
+        <input type="hidden" id="edit-id">
+        <input type="text" id="rem-text" placeholder="Ritual Name">
+        <input type="datetime-local" id="rem-time">
+        <select id="widget-select" onchange="toggleWidgetInput()">
+            <option value="new">-- New Widget --</option>
+        </select>
+        <input type="text" id="new-widget-name" placeholder="Widget Name...">
+        <input type="text" id="rem-link" placeholder="Link">
+        <input type="file" id="rem-file" accept="image/*">
+        <div style="display:flex; gap:10px;">
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
+            <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDHrIBHOkeixoLagY9f2JfFqWpQRFj8MeE",
+        authDomain: "aiden-reminders.firebaseapp.com",
+        databaseURL: "https://aiden-reminders-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "aiden-reminders",
+        storageBucket: "aiden-reminders.firebasestorage.app",
+        messagingSenderId: "87284883715",
+        appId: "1:87284883715:web:c2de76ab3d2f1170084936"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const messaging = getMessaging(app);
+
+    let reminders = [];
+    let isEditMode = false;
+
+    // --- NOTIFICATION REGISTRATION ---
+    window.initNotifications = async () => {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            try {
+                const token = await getToken(messaging, { vapidKey: 'YOUR_PUBLIC_VAPID_KEY_HERE' });
+                console.log("Token generated for background push:", token);
+                alert("Push Notifications Ready.");
+            } catch (err) {
+                console.error("Token error", err);
+            }
+        }
+    };
+
+    // --- UI LOGIC ---
+    window.toggleEditMode = () => {
+        isEditMode = !isEditMode;
+        document.getElementById('edit-toggle').classList.toggle('active', isEditMode);
+    };
+
+    window.openModal = (id = null) => {
+        const select = document.getElementById('widget-select');
+        select.innerHTML = '<option value="new">-- New Widget --</option>';
+        [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(n => {
+            select.innerHTML += `<option value="${n}">${n}</option>`;
+        });
+
+        if (id) {
+            const rem = reminders.find(r => r.id === id);
+            document.getElementById('edit-id').value = id;
+            document.getElementById('rem-text').value = rem.text;
+            document.getElementById('rem-time').value = rem.time || '';
+            document.getElementById('widget-select').value = rem.widget;
+        } else {
+            document.getElementById('edit-id').value = '';
+            document.getElementById('rem-text').value = '';
+        }
+        document.getElementById('modal-overlay').style.display = 'flex';
+        window.toggleWidgetInput();
+    };
+
+    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
+
+    window.toggleWidgetInput = () => {
+        document.getElementById('new-widget-name').style.display = (document.getElementById('widget-select').value === 'new') ? 'block' : 'none';
+    };
+
+    // --- DATA HANDLING ---
+    onValue(ref(db, 'reminders'), (snapshot) => {
+        const data = snapshot.val();
+        reminders = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
+        renderArchive();
+    });
+
+    window.saveReminder = () => {
+        const id = document.getElementById('edit-id').value;
+        const text = document.getElementById('rem-text').value;
+        const time = document.getElementById('rem-time').value;
+        const widget = (document.getElementById('widget-select').value === 'new') ? document.getElementById('new-widget-name').value : document.getElementById('widget-select').value;
+        
+        const data = { text, time, widget };
+        if (id) update(ref(db, `reminders/${id}`), data);
+        else push(ref(db, 'reminders'), data);
+        closeModal();
+    };
+
+    window.deleteReminder = (id) => {
+        if(confirm("Purge?")) remove(ref(db, `reminders/${id}`));
+    };
+
+    function renderArchive() {
+        const container = document.getElementById('widget-display-area');
+        container.innerHTML = '';
+        const groups = reminders.reduce((acc, curr) => {
+            if (!acc[curr.widget]) acc[curr.widget] = [];
+            acc[curr.widget].push(curr);
+            return acc;
+        }, {});
+
+        Object.keys(groups).forEach(name => {
+            const box = document.createElement('div');
+            box.className = 'widget-box';
+            box.innerHTML = `<div class="widget-title">${name}</div>`;
+            groups[name].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'reminder-item';
+                div.innerHTML = `
+                    <input type="checkbox" onchange="deleteReminder('${item.id}')">
+                    <span onclick="isEditMode ? openModal('${item.id}') : null">${item.text}</span>
+                    <small class="reminder-time">${item.time ? item.time.split('T')[1] : ''}</small>`;
+                box.appendChild(div);
+            });
+            container.appendChild(box);
+        });
+    }
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gothic Archive: Drag & Edit</title>
     <style>
         :root {
