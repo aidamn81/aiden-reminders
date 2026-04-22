@@ -9,12 +9,12 @@
     <title>Gothic Archive: Bound Edition</title>
     <style>
         :root {
-            --bg-color: #050505;
-            --panel-color: rgba(20, 20, 20, 0.98);
+            --bg-color: #000000; /* Pure black for icon matching */
+            --panel-color: #0a0a0a;
             --accent-color: #4a0404;
             --highlight: #8b0000;
             --text-color: #e0e0e0;
-            --gloss: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 50%);
+            --gloss: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%);
         }
 
         body {
@@ -24,11 +24,11 @@
             margin: 0;
             padding-bottom: 80px;
             user-select: none;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
         }
 
         .admin-bar {
-            background: var(--panel-color);
+            background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
             padding: 15px;
             border-bottom: 1px solid var(--accent-color);
@@ -44,9 +44,9 @@
             background: #111;
             color: var(--text-color);
             border: 1px solid #333;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 8px 14px;
+            border-radius: 15px;
+            font-size: 0.7rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -54,110 +54,115 @@
         .admin-bar button.active {
             background: var(--accent-color);
             border-color: var(--highlight);
-            box-shadow: 0 0 15px var(--highlight);
+            box-shadow: 0 0 10px var(--highlight);
         }
 
         #widget-display-area {
             padding: 20px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
         }
 
+        /* --- WIDGET BOX (MATCHING SCREENSHOT) --- */
         .widget-box {
             background: var(--panel-color);
-            border: 1px solid rgba(74, 4, 4, 0.5);
-            width: 330px;
-            min-height: 100px;
-            padding: 15px;
-            border-radius: 25px;
+            border: 1px solid #1a1a1a;
+            width: 95%;
+            max-width: 450px;
+            padding: 20px;
+            border-radius: 30px;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            box-sizing: border-box; /* Ensures padding stays inside width */
-            overflow: hidden;
-        }
-
-        .widget-box::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 50%;
-            background: var(--gloss);
-            pointer-events: none;
-            border-radius: 25px 25px 0 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
 
         .widget-title {
-            font-size: 1rem;
-            color: var(--highlight);
+            font-size: 0.9rem;
+            color: #cc6666; /* Muted red from your screenshot */
             text-align: center;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            word-wrap: break-word;
+            font-weight: normal;
         }
 
+        /* --- REMINDER ITEMS --- */
         .reminder-list { 
-            min-height: 60px;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .reminder-item {
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            margin-bottom: 10px;
-            padding: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: #000000;
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid #151515;
             position: relative;
-            z-index: 5;
             box-sizing: border-box;
             width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .reminder-item::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--gloss);
+            border-radius: 20px;
+            pointer-events: none;
         }
 
         .edit-active .reminder-item {
             border: 1px dashed var(--highlight);
-            cursor: pointer !important;
         }
 
         .reminder-header {
-            display: flex;
-            align-items: flex-start; /* Align to top for long text */
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 40px 1fr 40px;
+            align-items: center;
             width: 100%;
         }
 
-        /* --- SURGICAL OVERFLOW FIX --- */
+        /* Checkbox styling */
+        .reminder-header input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
         .reminder-header span { 
-            flex: 1;
-            pointer-events: none;
+            text-align: left;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            word-break: break-word; /* Forces break if no spaces */
-            line-height: 1.4;
-            font-size: 0.9rem;
+            line-height: 1.5;
+            font-size: 1rem;
+            padding: 0 10px;
         }
 
         .reminder-time-tag {
             font-size: 0.65rem;
-            color: #666;
-            font-style: italic;
-            white-space: nowrap; /* Keep time on one line */
-            margin-top: 2px;
+            color: #555;
+            text-align: right;
+            line-height: 1.2;
         }
 
         .reminder-item img {
             width: 100%;
             height: auto;
-            border-radius: 10px;
-            margin-top: 10px;
-            border: 1px solid #222;
-            display: block;
+            border-radius: 15px;
+            margin-top: 15px;
+            border: 1px solid #111;
         }
 
+        /* --- MODAL --- */
         #modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: rgba(0,0,0,0.98);
             display: none;
             justify-content: center;
             align-items: center;
@@ -165,26 +170,25 @@
         }
 
         .modal {
-            background: #0a0a0a;
-            padding: 25px;
+            background: #050505;
+            padding: 30px;
             border: 1px solid var(--accent-color);
-            border-radius: 30px;
+            border-radius: 35px;
             width: 90%;
             max-width: 400px;
         }
 
         input, select {
-            width: 100%; background: #000; border: 1px solid #333;
-            color: white; margin: 10px 0; padding: 12px; border-radius: 12px;
-            font-size: 1rem;
-            box-sizing: border-box;
+            width: 100%; background: #000; border: 1px solid #222;
+            color: white; margin: 12px 0; padding: 15px; border-radius: 15px;
+            font-size: 1rem; box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
 <div class="admin-bar">
-    <button id="edit-btn" onclick="toggleEditMode()">Edit Mode</button>
+    <button id="edit-btn" onclick="toggleEditMode()">Edit</button>
     <button onclick="openModal()">+ Add</button>
     <button onclick="requestNotify()">Notifs</button>
     <button onclick="location.reload()">Refresh</button>
@@ -194,9 +198,9 @@
 
 <div id="modal-overlay">
     <div class="modal">
-        <h3 id="modal-title" style="color:var(--highlight); text-align:center;">ARCHIVE DATA</h3>
+        <h3 id="modal-title" style="color:var(--highlight); text-align:center; font-weight:normal; letter-spacing:2px;">ARCHIVE</h3>
         <input type="hidden" id="edit-id">
-        <input type="text" id="rem-text" placeholder="Ritual/Task Name">
+        <input type="text" id="rem-text" placeholder="Ritual Name">
         <input type="datetime-local" id="rem-time">
         <select id="widget-select" onchange="toggleWidgetInput()">
             <option value="new">-- New Widget --</option>
@@ -204,9 +208,9 @@
         <input type="text" id="new-widget-name" placeholder="Widget Name..." style="display:none;">
         <input type="text" id="rem-link" placeholder="Link (Optional)">
         <input type="file" id="rem-file" accept="image/*">
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:12px; border-radius:15px;" onclick="saveReminder()">BIND</button>
-            <button style="flex:1; background:#222; color:white; border:none; padding:12px; border-radius:15px;" onclick="closeModal()">CANCEL</button>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button style="flex:1; background:var(--accent-color); color:white; border:none; padding:15px; border-radius:20px;" onclick="saveReminder()">BIND</button>
+            <button style="flex:1; background:#222; color:white; border:none; padding:15px; border-radius:20px;" onclick="closeModal()">CLOSE</button>
         </div>
     </div>
 </div>
@@ -233,13 +237,14 @@
     let isEditMode = false;
     let notifiedIds = new Set();
 
+    // Heartbeat for local alerts
     setInterval(() => {
         const now = new Date();
         const localISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         reminders.forEach(r => {
             if (r.time === localISO && !notifiedIds.has(r.id)) {
                 if (Notification.permission === "granted") new Notification("Archive Reminder", { body: r.text });
-                alert("DUE NOW: " + r.text);
+                alert("DUE: " + r.text);
                 notifiedIds.add(r.id);
             }
         });
@@ -268,13 +273,11 @@
             document.getElementById('rem-time').value = r.time || '';
             document.getElementById('rem-link').value = r.link || '';
             document.getElementById('widget-select').value = r.widget;
-            document.getElementById('modal-title').innerText = "EDIT RITUAL";
         } else {
             document.getElementById('edit-id').value = '';
             document.getElementById('rem-text').value = '';
             document.getElementById('rem-time').value = '';
             document.getElementById('rem-link').value = '';
-            document.getElementById('modal-title').innerText = "NEW ARCHIVE";
         }
         document.getElementById('modal-overlay').style.display = 'flex';
         window.toggleWidgetInput();
@@ -301,7 +304,7 @@
         const wName = (wSel === 'new') ? document.getElementById('new-widget-name').value : wSel;
         const file = document.getElementById('rem-file').files[0];
 
-        if (!text || !wName) return alert("Missing data.");
+        if (!text || !wName) return alert("Archive Bound Failed: Ritual & Widget required.");
 
         const send = (img = null) => {
             const p = { text, time, link, widget: wName };
@@ -312,13 +315,13 @@
         };
 
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => send(e.target.result);
-            reader.readAsDataURL(file);
+            const r = new FileReader();
+            r.onload = (e) => send(e.target.result);
+            r.readAsDataURL(file);
         } else send();
     };
 
-    window.deleteReminder = (id) => { if (confirm("Purge?")) remove(ref(db, `reminders/${id}`)); };
+    window.deleteReminder = (id) => { if (confirm("Erase from Archive?")) remove(ref(db, `reminders/${id}`)); };
 
     function renderArchive() {
         const area = document.getElementById('widget-display-area');
@@ -340,13 +343,19 @@
                 div.className = 'reminder-item';
                 div.setAttribute('data-id', item.id);
                 if (!isEditMode) div.draggable = true;
-                div.onclick = () => { if(isEditMode) openModal(item.id); };
+                
+                // Clicking the item opens the modal only in edit mode
+                div.onclick = (e) => { 
+                    if(isEditMode && e.target.type !== 'checkbox') openModal(item.id); 
+                };
+
+                const t = item.time ? item.time.split('T')[1] : '';
 
                 div.innerHTML = `
                     <div class="reminder-header">
                         <input type="checkbox" onchange="deleteReminder('${item.id}')">
                         <span>${item.text}</span>
-                        <div class="reminder-time-tag">${item.time ? item.time.split('T')[1] : ''}</div>
+                        <div class="reminder-time-tag">${t}</div>
                     </div>
                     ${item.image ? `<img src="${item.image}">` : ''}
                 `;
