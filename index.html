@@ -25,6 +25,7 @@
             margin: 0;
             padding-bottom: 100px;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .admin-bar {
@@ -44,16 +45,18 @@
             background: #111;
             color: var(--text-color);
             border: 1px solid #333;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+            padding: 12px 15px;
+            border-radius: 14px;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            cursor: pointer;
+            min-width: 70px;
+            transition: all 0.2s ease;
         }
 
-        .notif-toggle.active { border-color: var(--on-glow); box-shadow: 0 0 10px var(--on-glow); color: var(--on-glow); }
-        #edit-btn.active { background: var(--accent-color); border-color: var(--highlight); }
+        /* Status Colors */
+        .notif-active { border-color: var(--on-glow) !important; color: var(--on-glow) !important; box-shadow: 0 0 10px var(--on-glow); }
+        .edit-on { background: var(--accent-color) !important; border-color: var(--highlight) !important; }
 
         #widget-display-area {
             padding: 15px;
@@ -67,6 +70,7 @@
             border: 1px solid #1a1a1a;
             padding: 15px;
             border-radius: 25px;
+            height: fit-content;
         }
 
         .widget-title {
@@ -107,8 +111,8 @@
 <div class="admin-bar">
     <button id="edit-btn">Edit</button>
     <button id="add-btn">+ Add</button>
-    <button id="notif-toggle">Notifs</button>
-    <button id="sync-btn">Sync</button>
+    <button id="notif-toggle" onclick="requestSentinel()">Notifs</button>
+    <button onclick="location.reload()">Sync</button>
 </div>
 
 <div id="widget-display-area"></div>
@@ -130,6 +134,26 @@
     </div>
 </div>
 
+<script>
+    // --- GLOBAL SCOPE NOTIF TRIGGER ---
+    // Placed outside module to ensure iOS recognizes the user gesture
+    function requestSentinel() {
+        if (window.navigator.vibrate) window.navigator.vibrate(10);
+        
+        Notification.requestPermission().then(perm => {
+            const btn = document.getElementById('notif-toggle');
+            if (perm === "granted") {
+                btn.classList.add('notif-active');
+                btn.innerText = "Active";
+                new Notification("Sentinel Engaged", { body: "Archive monitoring active." });
+            } else {
+                btn.classList.remove('notif-active');
+                btn.innerText = "Blocked";
+            }
+        });
+    }
+</script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
@@ -148,45 +172,33 @@
     let reminders = [];
     let isEditMode = false;
 
-    // --- BUTTON BINDING (Fixes the "None work" issue) ---
-    document.getElementById('edit-btn').onclick = () => toggleEditMode();
+    // --- RE-BINDING BUTTONS ---
+    document.getElementById('edit-btn').onclick = () => {
+        isEditMode = !isEditMode;
+        document.body.classList.toggle('edit-active', isEditMode);
+        document.getElementById('edit-btn').classList.toggle('edit-on', isEditMode);
+        renderArchive();
+    };
+
     document.getElementById('add-btn').onclick = () => openModal();
-    document.getElementById('notif-toggle').onclick = () => requestSentinel();
-    document.getElementById('sync-btn').onclick = () => location.reload();
-    document.getElementById('close-modal-btn').onclick = () => closeModal();
     document.getElementById('save-btn').onclick = () => saveReminder();
+    document.getElementById('close-modal-btn').onclick = () => closeModal();
     document.getElementById('widget-select').onchange = (e) => {
         document.getElementById('new-widget-name').style.display = (e.target.value === 'new') ? 'block' : 'none';
     };
 
-    // --- SERVICE WORKER ---
+    // Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(() => console.log('Sentinel Online'));
+        navigator.serviceWorker.register('./sw.js');
     }
 
-    function requestSentinel() {
-        Notification.requestPermission().then(perm => {
-            const btn = document.getElementById('notif-toggle');
-            btn.classList.toggle('active', perm === "granted");
-            btn.innerText = perm === "granted" ? "Notifs: On" : "Notifs: Off";
-            if(perm === "granted") new Notification("Sentinel Active");
-        });
-    }
-
-    function toggleEditMode() {
-        isEditMode = !isEditMode;
-        document.body.classList.toggle('edit-active', isEditMode);
-        document.getElementById('edit-btn').classList.toggle('active', isEditMode);
-        renderArchive();
-    }
-
+    // Modal & Save logic
     function openModal(id = null) {
         const select = document.getElementById('widget-select');
         select.innerHTML = '<option value="new">-- New Widget --</option>';
         [...new Set(reminders.map(r => r.widget))].filter(Boolean).forEach(w => {
             select.innerHTML += `<option value="${w}">${w}</option>`;
         });
-
         if (id) {
             const r = reminders.find(item => item.id === id);
             document.getElementById('edit-id').value = id;
@@ -209,9 +221,7 @@
         const time = document.getElementById('rem-time').value;
         const wSel = document.getElementById('widget-select').value;
         const wName = (wSel === 'new') ? document.getElementById('new-widget-name').value : wSel;
-        
-        if (!text || !wName) return alert("Archive requires more data.");
-        
+        if (!text || !wName) return;
         const payload = { text, time, widget: wName };
         if (id) update(ref(db, `reminders/${id}`), payload);
         else push(dbRef, payload);
@@ -222,7 +232,6 @@
         const data = snap.val();
         reminders = data ? Object.keys(data).map(k => ({ ...data[k], id: k })) : [];
         renderArchive();
-        
         if (navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({ type: 'SYNC', data: reminders });
         }
@@ -241,22 +250,19 @@
             const box = document.createElement('div');
             box.className = 'widget-box';
             box.innerHTML = `<div class="widget-title">${name}</div><div class="reminder-list"></div>`;
-            
             groups[name].forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'reminder-item';
                 div.onclick = () => { if (isEditMode) openModal(item.id); };
-                
                 div.innerHTML = `
                     <div class="reminder-header">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                             <input type="checkbox" id="check-${item.id}">
+                        <div style="display:flex; justify-content:space-between">
+                             <input type="checkbox" id="del-${item.id}">
                              <div class="time-tag">${item.time ? item.time.split('T')[1] : ''}</div>
                         </div>
                         <span>${item.text}</span>
                     </div>
                 `;
-                // Checkbox separate click to prevent opening modal
                 div.querySelector('input').onclick = (e) => {
                     e.stopPropagation();
                     if(confirm("Erase?")) remove(ref(db, `reminders/${item.id}`));
